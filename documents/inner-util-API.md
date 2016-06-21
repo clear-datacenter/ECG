@@ -201,3 +201,54 @@ innerUtil.getAllDrawECG();
 返回值：
 ［］：所有要绘制的心电名字的数组
 ```
+
+### innerUtil.drawCols()方法
+
+该方法用于绘制心电图背景中的列，每列的宽度读取配置信息中的doc.cellWidth属性的值，目前暂且绘制在bc canvas中，以后会考虑绘制在fc canvas中，以便于保存图片到本地。
+
+```javascript
+innerUtil.drawCols();
+
+参数：无
+
+返回值：无
+```
+
+### innerUtil.drawRows()方法
+
+该方法用于绘制心电图背景中的行，每行的宽度读取配置信息中的doc.cellHeight属性的值，目前暂且绘制在bc canvas中，以后会考虑绘制在fc canvas中，以便于保存图片到本地。
+
+```javascript
+innerUtil.drawRows();
+
+参数：无
+
+返回值：无
+```
+
+### innerUtil.drawPoints()方法
+
+该方法用于绘制心电图背景中的点，每个中格子会被4 ＊ 4个点分成5 ＊ 5个小格子，绘制点点位置根据cellWidth和cellHeight的数值确定，目前暂且绘制在bc canvas中，以后会考虑绘制在fc canvas中，以便于保存图片到本地。
+
+```javascript
+innerUtil.drawPoints();
+
+参数：无
+
+返回值：无
+```
+
+### innerUtil.drawTime()方法
+
+该方法用于绘制当前心电的起始时间，每四秒绘制一次。
+
+```javascript
+innerUtil.drawTime(time, name);
+
+参数：
+time：要绘制的时间的字符串
+name：随便一条要绘制的心电的名字，该名字用来在ECG.doc.coordinate属性中获取任一条心电当前的X轴的位置，用来确定时间的起始绘制位置
+
+返回值：
+{boolean}: 设置成功返回true
+```

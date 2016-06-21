@@ -3,7 +3,7 @@
  * CreateTime:  16/5/26 11:10
  * Description: ECG.js主文件,主要将可以投入生产环境使用的相关方法插入该文件
  */
-var ECG = (function () {
+var ECG = (function (window, undefined) {
         /**
          * 存储所有跟canvas相关的参数
          */
@@ -25,7 +25,7 @@ var ECG = (function () {
             },
 
             width      : 1000,    // ECG容器的宽度
-            height     : 1000,     // ECG容器的高度
+            height     : 1001,     // ECG容器的高度
             marginL    : 1,      // canvas左边边距,用来存放说明性的文字
             tWidth     : 1001,     // canvas元素的总宽度
             fcWidth    : 18000,    // fc宽度
@@ -33,7 +33,7 @@ var ECG = (function () {
             cellWidth  : 50,       // 背景单元格宽度
             cellHeight : 50,       // 背景单元格高度
 
-            originPosition : 2,  // 描述文字以及心电图的基点位置在第几行
+            originPosition : 1,  // 描述文字以及心电图的基点位置在第几行
 
             descriptionWords : {
                 style    : {    // descriptionWords描述文字样式配置
@@ -75,13 +75,6 @@ var ECG = (function () {
                     std : 25,    // 标准走纸速度：25mm/s
                     cur : 25,    // 产品中的当前走纸速度：25mm/s,
                     mul : 1,     // 走速的放大倍数，在修改产品当前走速的时候会相应地修改该放大倍数
-                },
-                // 放置ecg每条心电的样式
-                ecgStyle   : {
-                    V1    : '#000',
-                    V5    : '#000',
-                    aVF   : '#000',
-                    Pacer : '#000'
                 },
                 // 主要存放心电图当前的位置
                 coordinate : {
@@ -151,7 +144,7 @@ var ECG = (function () {
                     background : '#eff9ff',
                     font       : '#000',
                     grid       : '#ccc',    // 边框及点的颜色
-                    line       : '#000',    // 心电图线段的颜色
+                    line       : '#007cab',    // 心电图线段的颜色
                     lineWidth  : 1,
                     dotWidth   : 1
                 }
@@ -307,17 +300,17 @@ var ECG = (function () {
                 var space = doc.cellWidth * doc.colsPerSecond * psMultiple / doc.rate;
 
                 context.beginPath();
-                context.strokeStyle = doc.fc.ecgStyle[ name ];
+                context.strokeStyle = doc.theme.line;
                 context.moveTo(coordinate.x, coordinate.y);
                 var baseY = innerUtil.getBaseY(name);
-                var destinationX = coordinate.x;
+                var destinationX = coordinate.x + space;
                 // todo 现在使用250px表示2.5mv心电电压,即每像素表示0.01mv
                 // todo 所以对于给定的心电电压v,需要表示该电压的像素数为:v/0.01
-                var destinationY = baseY - v / 0.01 * gainMultiple;
-                context.lineTo(destinationX + 0.5, destinationY);
+                var destinationY = Math.floor(baseY - v / 0.01 * gainMultiple) + 0.5;
+                context.lineTo(destinationX, destinationY);
 
                 {
-                    coordinate.x = destinationX + space;
+                    coordinate.x = destinationX;
                     coordinate.y = destinationY;
                 }
 
@@ -467,6 +460,126 @@ var ECG = (function () {
                 return subAll;
             },
 
+            /**
+             * 绘制背景中的列
+             */
+            drawCols : function () {
+                var cellWidth = doc.cellWidth;    // 单元格的宽度
+                var context = doc.context.bcContext;
+                if (!cellWidth) {
+                    cellWidth = 50;
+                }
+                context.strokeStyle = doc.theme.grid;
+                context.lineWidth = doc.theme.lineWidth;
+                /**
+                 * 这里i的初始值应为width+doc.marginL,
+                 * 因为边框距离canvas左边距为doc.marginL,
+                 */
+                var i      = cellWidth + doc.marginL,
+                    tWidth = doc.width + doc.marginL,
+                    num    = 1;
+
+                for (i; i < tWidth; i += cellWidth) {
+                    if (num % doc.colsPerSecond == 0) {
+                        context.beginPath();
+                        context.lineWidth = 2;
+                        context.moveTo(i, 0);
+                        context.lineTo(i, doc.height);
+                    } else {
+                        context.beginPath();
+                        context.lineWidth = 1;
+                        context.moveTo(i + 0.5, 0);
+                        context.lineTo(i + 0.5, doc.height);
+                    }
+                    context.stroke();
+                    num++;
+                }
+            },
+
+            /**
+             * 绘制背景中的行
+             */
+            drawRows : function () {
+                var cellHeight = doc.cellHeight;   // 单元格的高度
+                var context = doc.context.bcContext;
+
+                if (!cellHeight) {
+                    cellHeight = cellWidth;
+                }
+                context.beginPath();
+                context.strokeStyle = doc.theme.grid;
+                var num = 1;
+                for (var j = cellHeight; j < doc.height; j += cellHeight) {
+                    /**
+                     * 这里行的起始位置的横坐标为doc.marginL,
+                     * 因为canvas的border是从距离左边doc.marginL的地方开始画的
+                     */
+                    if (num % doc.rowsPerLine == 0) {
+                        context.beginPath();
+                        context.lineWidth = 2;
+                        context.moveTo(doc.marginL, j);
+                        context.lineTo(doc.tWidth, j);
+                    } else {
+                        context.beginPath();
+                        context.lineWidth = 1;
+                        context.moveTo(doc.marginL, j + 0.5);
+                        context.lineTo(doc.tWidth, j + 0.5);
+                    }
+                    context.stroke();
+                    num++;
+                }
+            },
+
+            /**
+             * 绘制背景中的点
+             */
+            drawPoints : function () {
+                var ifPoint = doc.ifPoint;
+
+                if (ifPoint) {
+                    var dotMargin = Math.floor(doc.cellWidth / 5);
+                    var context = doc.context.bcContext;
+                    context.fillStyle = doc.theme.grid;
+
+                    var i = dotMargin + doc.marginL;
+                    for (i; i < doc.tWidth; i += dotMargin) {
+                        if (((i - doc.marginL
+                             ) % doc.cellWidth
+                            ) != 0) {    // 列分隔线处不打点
+                            for (var j = dotMargin; j < doc.height; j += dotMargin) {
+                                if ((j % doc.cellHeight
+                                    ) != 0) {    // 行分割线处不打点
+                                    context.rect(i, j, doc.theme.dotWidth, doc.theme.dotWidth);
+                                }
+                            }
+                        }
+                    }
+                    context.fill();
+                }
+            },
+
+            /**
+             * 绘制当前的心电的起始时间,
+             * 这里的name属性是为了获取到任意一条心电的起始坐标,
+             * 以便确定绘制心电时间的位置
+             *
+             * @param time
+             * @param name
+             * @returns {boolean}
+             */
+            drawTime : function (time, name) {
+                var context = doc.context.fcContext;
+                var coordinate = doc.fc.coordinate[ name ];
+                var contextX = coordinate.x;
+
+                context.save();
+                context.beginPath();
+                context.fillStyle = doc.theme.font;
+                context.fillText(time, contextX, 20);
+                context.restore();
+
+                return true;
+            },
         };
 
         /**
@@ -683,9 +796,9 @@ var ECG = (function () {
                 var context = doc.context.bcContext;
                 context.beginPath();
                 context.strokeStyle = doc.theme.grid;
-                context.strokeWidth = doc.theme.lineWidth;
+                context.lineWidth = 2;
                 // 这里绘制边框时左边要留出doc.marginL的宽度,用来放置说明文字
-                context.rect(doc.marginL - 0.5, 0, doc.width, doc.height);
+                context.rect(doc.marginL, 1, doc.width - 1, doc.height - 1);
                 context.stroke();
 
                 // 将绘制的内容设置为ECG最外层容器的背景
@@ -764,13 +877,21 @@ var ECG = (function () {
                 var theme = doc.themes[ name ];
                 doc.theme = theme;
 
+                // 设置ECG容器的背景颜色
+                var canvas = document.querySelector('#canvas');
+                canvas.style.backgroundColor = theme.background;
+
+                // 绘制背景
                 if (!chart.drawBc()) {
+                    return false;
+                }
+                // 绘制fcContext
+                if (!chart.drawFc()) {
                     return false;
                 }
 
                 return true;
-            }
-
+            },
         };
 
         /**
@@ -841,11 +962,8 @@ var ECG = (function () {
              */
             drawBc : function () {
                 // todo 在绘制的时候要注意考虑doc.marginL
-                var canvas     = doc.ecgDom.bc,     // 背景canvas对象
-                    cellWidth  = doc.cellWidth,    // 单元格的宽度
-                    cellHeight = doc.cellHeight,   // 单元格的高度
-                    ifPoint    = doc.ifPoint,       // 是否绘制背景中点标志位
-                    context    = doc.context.bcContext;
+                var canvas = doc.ecgDom.bc;     // 背景canvas对象
+                var context = doc.context.bcContext;
 
                 // 检测canvas是否存在
                 {
@@ -865,81 +983,15 @@ var ECG = (function () {
                 }
                 // 绘制背景的列
                 {
-                    if (!cellWidth) {
-                        cellWidth = 50;
-                    }
-                    context.strokeStyle = doc.theme.grid;
-                    context.strokeWidth = doc.theme.lineWidth;
-                    /**
-                     * 这里i的初始值应为width+doc.marginL,
-                     * 因为边框距离canvas左边距为doc.marginL,
-                     */
-                    var i      = cellWidth + doc.marginL,
-                        tWidth = doc.width + doc.marginL,
-                        num    = 1;
-
-                    for (i; i < tWidth; i += cellWidth) {
-                        if (num % doc.colsPerSecond == 0) {
-                            context.beginPath();
-                            context.strokeWidth = 1;
-                            context.moveTo(i, 0);
-                            context.lineTo(i, doc.height);
-                        } else {
-                            context.beginPath();
-                            context.strokeWidth = 1;
-                            context.moveTo(i + 0.5, 0);
-                            context.lineTo(i + 0.5, doc.height);
-                        }
-                        context.stroke();
-                        num++;
-                    }
+                    innerUtil.drawCols();
                 }
                 // 绘制背景的行
                 {
-                    if (!cellHeight) {
-                        cellHeight = cellWidth;
-                    }
-                    context.beginPath();
-                    context.strokeStyle = doc.theme.grid;
-                    context.strokeWidth = doc.theme.lineWidth;
-                    var num = 1;
-                    for (var j = cellHeight; j < doc.height; j += cellHeight) {
-                        /**
-                         * 这里行的起始位置的横坐标为doc.marginL,
-                         * 因为canvas的border是从距离左边doc.marginL的地方开始画的
-                         */
-                        if (num % doc.rowsPerLine != 0) {
-                            context.moveTo(doc.marginL, j + 0.5);
-                        } else {
-                            context.moveTo(doc.marginL, j);
-                        }
-                        context.lineTo(doc.tWidth, j + 0.5);
-                        num++;
-                    }
-                    context.stroke();
+                    innerUtil.drawRows();
                 }
                 // 绘制背景中的点
                 {
-                    if (ifPoint) {
-                        var dotMargin = Math.floor(doc.cellWidth / 5);
-                        var context = doc.context.bcContext;
-                        context.fillStyle = doc.theme.grid;
-
-                        var i = dotMargin + doc.marginL;
-                        for (i; i < doc.tWidth; i += dotMargin) {
-                            if (((i - doc.marginL
-                                 ) % doc.cellWidth
-                                ) != 0) {    // 列分隔线处不打点
-                                for (var j = dotMargin; j < doc.height; j += dotMargin) {
-                                    if ((j % doc.cellHeight
-                                        ) != 0) {    // 行分割线处不打点
-                                        context.rect(i, j, doc.theme.dotWidth, doc.theme.dotWidth);
-                                    }
-                                }
-                            }
-                        }
-                        context.fill();
-                    }
+                    innerUtil.drawPoints();
                 }
                 // 绘制左边说明文字
                 {
@@ -1129,15 +1181,18 @@ var ECG = (function () {
                 // 绘制心电
                 {
                     var ecgData = doc.ecgData;
-                    var hwLeadConfig = ecgData.hwLeadConfig;
                     var ecgPartBlocks = ecgData.ecgPartBlocks;
                     var allDrawECG = innerUtil.getAllDrawECG();
                     var allDrawECGLen = allDrawECG.length;
 
                     for (var i = 0; i < 18; i++) {
                         var subBlocks = ecgPartBlocks[ i ];
-                        var ecgPartBlocksHead = subBlocks[ 'ecgPartBlockHead' ];
                         var ecgPartBlocksData = subBlocks[ 'ecgPartBlockData' ];
+                        var ecgPartBlocksHead = subBlocks[ 'ecgPartBlockHead' ];
+                        var time = ecgPartBlocksHead[ 'headTime' ];
+
+                        // 绘制心电时间
+                        innerUtil.drawTime(time, allDrawECG[ 0 ]);
 
                         for (var j = 0; j < allDrawECGLen; j++) {
                             var name = allDrawECG[ j ];
@@ -1166,4 +1221,4 @@ var ECG = (function () {
             inner : innerUtil
         };
     }
-)();
+)(window);

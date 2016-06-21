@@ -33,7 +33,7 @@ $(function () {
                 type        : 'post',
                 contentType : 'application/json',
                 dataType    : 'json',
-                url         : 'http://10.0.10.81:8080/ycl-yun-vh-api-webapp/requestEcgDataAnalysis',
+                url         : 'http://10.0.10.131:8080/ycl-yun-vh-api-webapp/requestEcgDataAnalysis',
                 data        : JSON.stringify({
                     'ossId' : 40
                 }),
