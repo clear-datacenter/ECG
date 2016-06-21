@@ -48,25 +48,3 @@ $(function () {
         )
     }
 });
-
-// function getData() {
-//     $.ajax(
-//         {
-//             type: 'post',
-//             contentType: 'application/json',
-//             dataType: 'jsonp',
-//             jsonp: "callback",
-//             jsonpCallback: "flightHandler",
-//             // url: 'http://api.yocaly.com:8081/ycl-yun-vh-api-webapp/requestEcgDataAnalysis',
-//             url: 'http://114.215.123.92:8081/ycl-yun-vh-api-webapp/requestEcgDataAnalysis',
-//             data: JSON.stringify({
-//                 'ossId': 40
-//             }),
-//             success: function(data) {
-//                 window.result = data.result;
-//                 window.hwLeadConfig = result.hwLeadConfig;
-//                 window.ecgPartBlocks = result.ecgPartBlocks;
-//             }
-//         }
-//     );
-// }
