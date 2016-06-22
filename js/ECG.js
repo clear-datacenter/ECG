@@ -948,6 +948,11 @@ var ECG = (function (window, undefined) {
                     {
                         outUtil.setStyle(css);
                     }
+
+                    // 绘制背景
+                    {
+                        this.drawBc();
+                    }
                 } else {
                     console.log('配置信息错误,找不到ECG容器。');
                     return false;

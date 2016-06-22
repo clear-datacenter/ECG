@@ -9,8 +9,6 @@ $(function () {
     ECG.chart.init({
         id : 'canvas'
     });
-    // todo 绘制背景
-    ECG.chart.drawBc();
 
     // todo 给增益绑定修改事件
     $('#gain').on('change', function (e) {
