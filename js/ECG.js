@@ -68,33 +68,33 @@ var ECG = (function (window, undefined) {
             fc               : {
                 gain       : {     // 存放增益的配置信息
                     std : 10,    // 增益的标准：10mm/mv
-                    cur : 20,     // 产品中的当前增益：20mm/mv,
-                    mul : 2,     // 增益的放大倍数，在修改产品当前增益的时候会相应地修改该放大倍数
+                    cur : 10,     // 产品中的当前增益：20mm/mv,
+                    mul : 1     // 增益的放大倍数，在修改产品当前增益的时候会相应地修改该放大倍数
                 },
                 ps         : {   // 存放走速的配置信息，ps == paper speed
                     std : 25,    // 标准走纸速度：25mm/s
                     cur : 25,    // 产品中的当前走纸速度：25mm/s,
-                    mul : 1,     // 走速的放大倍数，在修改产品当前走速的时候会相应地修改该放大倍数
+                    mul : 1     // 走速的放大倍数，在修改产品当前走速的时候会相应地修改该放大倍数
                 },
                 // 主要存放心电图当前的位置
                 coordinate : {
                     V1    : {
                         x : 1,
-                        y : 160,
+                        y : 160
                     },
                     V5    : {
                         x : 1,
-                        y : 360,
+                        y : 360
                     },
                     aVF   : {
                         x : 1,
-                        y : 560,
+                        y : 560
                     },
                     Pacer : {
                         x : 1,
-                        y : 760,
+                        y : 760
                     }
-                },
+                }
             },
 
             rowsPerLine   : 5,        // 每条心电图占用几行
@@ -160,7 +160,8 @@ var ECG = (function (window, undefined) {
         var css = {
             // c中存放ECG最外层容器的样式,其中的所有样式都会应用到c容器上
             c  : {
-                width            : doc.tWidth + 'px',
+                width            : '100%',
+                maxWidth         : doc.tWidth + 'px',
                 overflowX        : 'scroll',
                 overflowY        : 'hidden',
                 backgroundRepeat : 'no-repeat'
@@ -187,7 +188,7 @@ var ECG = (function (window, undefined) {
                     doc.ecgDom.c = c;
                     return true;
                 } else {
-                    console.log('未找到ECG容器。');
+                    console.error('未找到ECG容器。');
                     return false;
                 }
             },
@@ -195,13 +196,13 @@ var ECG = (function (window, undefined) {
             /**
              * 设置ECG容器参数,如果没有则使用默认值
              *
-             * @param obj  {width: number, height: number},宽度和高度为数字
+             * @param obj {width: number, height: number},宽度和高度为数字
              */
             initECGProperty : function (obj) {
                 if (typeof obj === 'object') {
                     // 设置ECG容器的宽度
                     if ('width' in obj) {
-                        doc.ecgDom.c.width = obj.width;
+                        doc.ecgDom.c.style.width = '100%';
                         doc.width = obj.width;
                     }
                     // 设置doc.ecgDom.bc的左边距
@@ -221,7 +222,7 @@ var ECG = (function (window, undefined) {
                         doc.tWidth = doc.width + doc.marginL;
                     }
                 } else {
-                    console.log('initECGProperty参数错误');
+                    console.error('initECGProperty参数错误');
                 }
             },
 
@@ -230,7 +231,7 @@ var ECG = (function (window, undefined) {
              *
              * @param isBc 是否是心电背景
              */
-            initCanvas : function (isBc) {
+            createCanvas : function (isBc) {
                 var canvas = document.createElement('canvas');
 
                 canvas.height = doc.height;
@@ -284,8 +285,6 @@ var ECG = (function (window, undefined) {
             },
 
             /**
-             * todo 这个地方要根据心电电压计算纵坐标的值
-             *
              * 根据传入的心电的名字在指定位置绘制指定的心电
              *
              * @param name 要绘制的心电的名字,具体参见doc.fc.coordinate中的对象
@@ -433,7 +432,7 @@ var ECG = (function (window, undefined) {
              */
             getEcgIndex : function (name) {
                 if (!name || !this.isString(name)) {
-                    console.log('error: parameter is wrong.');
+                    console.error('error: parameter is wrong.');
 
                     return false;
                 }
@@ -450,13 +449,13 @@ var ECG = (function (window, undefined) {
                 var all = doc.descriptionWords.style;
                 var keys = Object.keys(all);
                 var subAll = [];
-                for (var index in keys) {
-                    var key = keys[ index ];
+                var len = keys.length;
+                for (var i = 0; i < len; i++) {
+                    var key = keys[ i ];
                     if (all[ key ][ 'ifDraw' ]) {
                         subAll.push(key);
                     }
                 }
-
                 return subAll;
             },
 
@@ -594,7 +593,7 @@ var ECG = (function (window, undefined) {
              */
             setECGWH : function (param) {
                 if (typeof param !== 'object') {
-                    console.log('setECGWH参数错误');
+                    console.error('setECGWH参数错误');
                     return false;
                 } else {
                     var ecgDom = doc.ecgDom;
@@ -618,7 +617,7 @@ var ECG = (function (window, undefined) {
              */
             setFcWH : function (param) {
                 if (typeof param !== 'object') {
-                    console.log('setFcWH参数错误');
+                    console.error('setFcWH参数错误');
                     return false;
                 } else {
                     if ('width' in param) {
@@ -642,12 +641,12 @@ var ECG = (function (window, undefined) {
              */
             setStyle : function (param) {
                 if (!ECG.doc.isInit) {
-                    console.log('ECG对象未初始化');
+                    console.error('ECG对象未初始化');
                     return false;
                 }
 
                 if (typeof param !== 'object') {
-                    console.log('setStyle参数错误');
+                    console.error('setStyle参数错误');
                     return false;
                 } else {
                     // 这里最后的s指代style
@@ -675,7 +674,7 @@ var ECG = (function (window, undefined) {
              */
             setMarginL : function (marginL) {
                 if (typeof marginL !== 'number') {
-                    console.log('setMarginL参数错误,无效的参数');
+                    console.error('setMarginL参数错误,无效的参数');
                     return false;
                 }
                 doc.marginL = marginL;
@@ -708,7 +707,7 @@ var ECG = (function (window, undefined) {
              */
             setDescriptionWordsStyle : function (obj) {
                 if (typeof obj !== 'object') {
-                    console.log('The type of param must be object.');
+                    console.error('The type of param must be object.');
                     return false;
                 }
 
@@ -762,7 +761,7 @@ var ECG = (function (window, undefined) {
                     // 检测说明文字的位置是否正确, 正常情况position < doc.rowsPerLine
                     if (0 > (doc.rowsPerLine - position
                         )) {
-                        console.log(
+                        console.error(
                             'error: the value of position is more than rowsPerLine, outUtil.setDescriptionWords');
                         continue;
                     }
@@ -835,7 +834,7 @@ var ECG = (function (window, undefined) {
              */
             setEcgData : function (result) {
                 if (!result || !innerUtil.isObject(result)) {
-                    console.log('error: the param is wrong, please check the input param.');
+                    console.error('error: the param is wrong, please check the input param.');
                     return false;
                 }
 
@@ -863,13 +862,13 @@ var ECG = (function (window, undefined) {
              */
             setTheme : function (name) {
                 if (!name || !innerUtil.isString(name)) {
-                    console.log('error: parameter is wrong, type String expected.');
+                    console.error('error: parameter is wrong, type String expected.');
 
                     return false;
                 }
 
                 if (!doc.themes.hasOwnProperty(name)) {
-                    console.log('error: name can not find in doc.themes, please check.');
+                    console.error('error: name can not find in doc.themes, please check.');
 
                     return false;
                 }
@@ -906,7 +905,7 @@ var ECG = (function (window, undefined) {
             init : function (obj) {
                 // 检测配置信息, obj错误则直接返回
                 if (typeof obj !== 'object') {
-                    console.log('配置信息错误,请以对象的形式传入配置信息。');
+                    console.error('配置信息错误,请以对象的形式传入配置信息。');
                     return;
                 }
                 // 对ECG容器进行初始化
@@ -915,6 +914,7 @@ var ECG = (function (window, undefined) {
                     {
                         var ECG = innerUtil.checkECG(obj.id);
                         if (!ECG) {
+                            console.error('ECG can not find by id');
                             return;
                         }
                     }
@@ -926,8 +926,8 @@ var ECG = (function (window, undefined) {
 
                     // 分别生成背景和心电用的canvas
                     {
-                        doc.ecgDom.bc = innerUtil.initCanvas(true);
-                        doc.ecgDom.fc = innerUtil.initCanvas(false);
+                        doc.ecgDom.bc = innerUtil.createCanvas(true);
+                        doc.ecgDom.fc = innerUtil.createCanvas(false);
 
                         doc.ecgDom.c.appendChild(doc.ecgDom.bc);
                         doc.ecgDom.c.appendChild(doc.ecgDom.fc);
@@ -954,7 +954,7 @@ var ECG = (function (window, undefined) {
                         this.drawBc();
                     }
                 } else {
-                    console.log('配置信息错误,找不到ECG容器。');
+                    console.error('配置信息错误,找不到ECG容器。');
                     return false;
                 }
             },
@@ -973,7 +973,7 @@ var ECG = (function (window, undefined) {
                 // 检测canvas是否存在
                 {
                     if (!canvas) {
-                        console.log('drawBc参数错误,未设置canvas或者找不到指定的canvas');
+                        console.error('drawBc参数错误,未设置canvas或者找不到指定的canvas');
                         return false;
                     }
                 }
@@ -1133,7 +1133,7 @@ var ECG = (function (window, undefined) {
              */
             setGain : function (val) {
                 if (!innerUtil.isNumber(val)) {
-                    console.log('error: the type of val is not Number but ' + Object.prototype.toString.call(val));
+                    console.error('error: the type of val is not Number but ' + Object.prototype.toString.call(val));
                     return false;
                 }
 
@@ -1154,7 +1154,7 @@ var ECG = (function (window, undefined) {
              */
             setPs : function (val) {
                 if (!innerUtil.isNumber(val)) {
-                    console.log('error: the type of the val is not Number but' + Object.prototype.toString.call(val));
+                    console.error('error: the type of the val is not Number but' + Object.prototype.toString.call(val));
                     return false;
                 }
 

@@ -49,10 +49,10 @@ obj {
 }
 ```
 
-<h3>4、innerUtil.initCanvas()方法</h3>
+<h3>4、innerUtil.createCanvas()方法</h3>
 
 ```javascript
-innerUtil.initCanvas(isBc);
+innerUtil.createCanvas(isBc);
 
 参数：
 isBC: boolean;	// 该canvas是背景还是前景

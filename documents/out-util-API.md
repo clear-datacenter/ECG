@@ -163,6 +163,8 @@ outUtil.getAllThemes();
 ｛Array}: 所有主题名字组成的数组
 ```
 
+现有主题：default、theme1、theme2
+
 ### outUtil.setTheme()方法
 
 该方法用于设置当前ECG的主题，主题名字可以通过outUtil.getAllThemes()方法获取。
