@@ -7,6 +7,7 @@
 ```javascript
 ecgDom = {
 	c: dom,		// ECG容器的最外层容器
+	c_in: dom,	// ECG容器的次外层容器
 	bc: dom,	// 作为背景的canvas元素
 	fc: dom		// 作为展示心电的canvas元素
 };
@@ -19,9 +20,6 @@ ECG.ecgDom.bc的宽度与容器的宽度相等。
 <h3>3、doc.height</h3>
 ECG容器的高度，默认为宽度的一半，可通过ECG.outUtil.setECGWH()方法设置。  
 ECG.ecgDom.bc的宽度与容器的高度相等。
-
-<h3>4、doc.fcWidth</h3>
-ECG容器的高度，默认为宽度的一半，可通过ECG.outUtil.setFcWH()方法设置。
 
 <h3>5、doc.fcHeight</h3>
 ECG容器的高度，默认为宽度的一半，可通过ECG.outUtil.setFcWH()方法设置。
@@ -134,7 +132,13 @@ doc.fc = {
 		},
 		v5: {},
 		...
-	}
+	},
+	// 设置每个fc的宽度
+	fcWidth: 6000，
+	// fc的总个数，计算方法：cellWidth * colsPerSecond * 72 * doc.fc.ps.mul(走速的放大倍数)／ fcWidth
+	fcNum: 3,
+	// 正在绘制内容的canvas的索引
+	drawIndex: 0
 }
 ```
 

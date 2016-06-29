@@ -3,7 +3,7 @@
  * CreateTime:  16/5/26 11:10
  * Description: ECG.js主文件,主要将可以投入生产环境使用的相关方法插入该文件
  */
-var ECG = (function (window, undefined) {
+var ECG = (function () {
         /**
          * 存储所有跟canvas相关的参数
          */
@@ -11,11 +11,13 @@ var ECG = (function (window, undefined) {
             // 存储ECG的dom元素
             ecgDom : {
                 // canvas容器
-                c  : {},
+                c    : {},
+                // canvas内层容器
+                c_in : {},
                 // 背景 | 后面的canvas
-                bc : {},
+                bc   : null,
                 // 心电 | 前面的canvas
-                fc : {}
+                fc   : []
             },
 
             // 存放ECG中所有的context
@@ -28,7 +30,6 @@ var ECG = (function (window, undefined) {
             height     : 1001,     // ECG容器的高度
             marginL    : 1,      // canvas左边边距,用来存放说明性的文字
             tWidth     : 1001,     // canvas元素的总宽度
-            fcWidth    : 18000,    // fc宽度
             fcHeight   : 800,     // fc高度
             cellWidth  : 50,       // 背景单元格宽度
             cellHeight : 50,       // 背景单元格高度
@@ -79,22 +80,27 @@ var ECG = (function (window, undefined) {
                 // 主要存放心电图当前的位置
                 coordinate : {
                     V1    : {
-                        x : 1,
+                        x : 0,
                         y : 160
                     },
                     V5    : {
-                        x : 1,
+                        x : 0,
                         y : 360
                     },
                     aVF   : {
-                        x : 1,
+                        x : 0,
                         y : 560
                     },
                     Pacer : {
-                        x : 1,
+                        x : 0,
                         y : 760
                     }
-                }
+                },
+                // 每个fc的宽度
+                fcWidth    : 6000,
+                // 一共需要多少个fc
+                fcNum      : 3,
+                drawIndex  : 0
             },
 
             rowsPerLine   : 5,        // 每条心电图占用几行
@@ -159,17 +165,21 @@ var ECG = (function (window, undefined) {
          */
         var css = {
             // c中存放ECG最外层容器的样式,其中的所有样式都会应用到c容器上
-            c  : {
+            c    : {
                 width            : '100%',
-                maxWidth         : doc.tWidth + 'px',
                 overflowX        : 'scroll',
                 overflowY        : 'hidden',
                 backgroundRepeat : 'no-repeat'
             },
+            // 内层容器的样式
+            c_in : {
+                width    : '18000px',
+                fontSize : '0px'
+            },
             // bc中存放ECG中bc的样式,其中所有的样式都会应用到bc容器上
-            bc : {
+            bc   : {
                 display : 'none'
-            }
+            },
         };
 
         /**
@@ -239,15 +249,17 @@ var ECG = (function (window, undefined) {
                 /**
                  * 分别处理bc和fc,
                  * bc的宽度会增加doc.marginL,用来存放说明文字
-                 * fc左边的边距会增加doc.marginL,便于与bc对齐,且fc的宽度来自doc.fcWidth
+                 * fc左边的边距会增加doc.marginL,便于与bc对齐,且fc的宽度来自doc.fc.fcWidth
+                 *
+                 * 2016-06-27 背景canvas的宽度设置为doc.width的2倍
                  */
                 if (isBc) {
-                    canvas.width = doc.width + doc.marginL;
+                    canvas.width = doc.width * 2;
                     canvas.id = 'bc';
                 } else {
-                    canvas.width = doc.fcWidth;
-                    canvas.style.marginLeft = doc.marginL + 'px';
-                    canvas.id = 'fc';
+                    canvas.width = doc.fc.fcWidth;
+                    canvas.style.float = 'left';
+                    canvas.className = 'fc';
                 }
 
                 return canvas;
@@ -291,23 +303,42 @@ var ECG = (function (window, undefined) {
              * @param v 当前要绘制线段终点的心电电压
              */
             drawECG : function (name, v) {
-                var context = doc.context.fcContext;
                 var coordinate = doc.fc.coordinate[ name ];
                 var gainMultiple = doc.fc.gain.mul;
                 var psMultiple = doc.fc.ps.mul;
                 // 根据每秒占用的宽度和采样率计算出每条线段的x轴宽度
                 var space = doc.cellWidth * doc.colsPerSecond * psMultiple / doc.rate;
 
-                context.beginPath();
-                context.strokeStyle = doc.theme.line;
-                context.moveTo(coordinate.x, coordinate.y);
-                var baseY = innerUtil.getBaseY(name);
-                var destinationX = coordinate.x + space;
-                // todo 现在使用250px表示2.5mv心电电压,即每像素表示0.01mv
-                // todo 所以对于给定的心电电压v,需要表示该电压的像素数为:v/0.01
-                var destinationY = Math.floor(baseY - v / 0.01 * gainMultiple) + 0.5;
-                context.lineTo(destinationX, destinationY);
+                // 计算终点的坐标,同时根据终点坐标来计算当前的fcContext
+                {
+                    var baseY = innerUtil.getBaseY(name);
+                    var destinationX = coordinate.x + space;
+                    // todo 现在使用250px表示2.5mv心电电压,即每像素表示0.01mv
+                    // todo 所以对于给定的心电电压v,需要表示该电压的像素数为:v/0.01
+                    var destinationY = Math.floor(baseY - v / 0.01 * gainMultiple) + 0.5;
 
+                    // 当前画布画到边缘时, 跳到下一个画布继续画
+                    // 此时x轴坐标大于fcWidth,所以后面要重新处理destinationX
+                    if (destinationX > doc.fc.fcWidth) {
+                        this.resetAllCoordinate();
+                        doc.fc.drawIndex++;
+                        if (doc.fc.drawIndex < doc.ecgDom.fc.length) {
+                            doc.context.fcContext =
+                                doc.ecgDom.fc[ doc.fc.drawIndex ].getContext('2d');
+                        }
+                        destinationX = 0;
+                    }
+                }
+                // 绘制线段
+                {
+                    var context = doc.context.fcContext;
+                    context.beginPath();
+                    context.strokeStyle = doc.theme.line;
+                    context.moveTo(coordinate.x, coordinate.y);
+                    context.lineTo(destinationX, destinationY);
+                }
+
+                // 重置当前的坐标
                 {
                     coordinate.x = destinationX;
                     coordinate.y = destinationY;
@@ -405,21 +436,25 @@ var ECG = (function (window, undefined) {
             },
 
             /**
-             * 重置所有的心电坐标
+             * 重置所有心电坐标,
+             * ifY为true时重置Y坐标,否则Y坐标保持不变
              *
+             * @param ifY
              * @returns {boolean}
              */
-            resetAllCoordinate : function () {
+            resetAllCoordinate : function (ifY) {
                 var coor = doc.fc.coordinate;
                 var keys = Object.keys(coor);
                 var len = keys.length;
 
                 for (var i = 0; i < len; i++) {
                     var subKey = keys[ i ];
-                    coor[ subKey ][ 'x' ] = doc.marginL;
-                    coor[ subKey ][ 'y' ] = ((doc.descriptionWords.style[ subKey ][ 'index' ] - 1
-                                             ) * doc.rowsPerLine + doc.originPosition
-                                            ) * doc.cellHeight;
+                    coor[ subKey ][ 'x' ] = 0;
+                    if (ifY) {
+                        coor[ subKey ][ 'y' ] = ((doc.descriptionWords.style[ subKey ][ 'index' ] - 1
+                                                 ) * doc.rowsPerLine + doc.originPosition
+                                                ) * doc.cellHeight;
+                    }
                 }
 
                 return true;
@@ -475,7 +510,7 @@ var ECG = (function (window, undefined) {
                  * 因为边框距离canvas左边距为doc.marginL,
                  */
                 var i      = cellWidth + doc.marginL,
-                    tWidth = doc.width + doc.marginL,
+                    tWidth = doc.width * 2,
                     num    = 1;
 
                 for (i; i < tWidth; i += cellWidth) {
@@ -517,12 +552,12 @@ var ECG = (function (window, undefined) {
                         context.beginPath();
                         context.lineWidth = 2;
                         context.moveTo(doc.marginL, j);
-                        context.lineTo(doc.tWidth, j);
+                        context.lineTo(doc.width * 2, j);
                     } else {
                         context.beginPath();
                         context.lineWidth = 1;
                         context.moveTo(doc.marginL, j + 0.5);
-                        context.lineTo(doc.tWidth, j + 0.5);
+                        context.lineTo(doc.width * 2, j + 0.5);
                     }
                     context.stroke();
                     num++;
@@ -541,7 +576,7 @@ var ECG = (function (window, undefined) {
                     context.fillStyle = doc.theme.grid;
 
                     var i = dotMargin + doc.marginL;
-                    for (i; i < doc.tWidth; i += dotMargin) {
+                    for (i; i < doc.width * 2; i += dotMargin) {
                         if (((i - doc.marginL
                              ) % doc.cellWidth
                             ) != 0) {    // 列分隔线处不打点
@@ -579,6 +614,57 @@ var ECG = (function (window, undefined) {
 
                 return true;
             },
+
+            /**
+             * 设置c_in次外层容器的宽度
+             *
+             * @param width
+             * @returns {boolean}
+             */
+            setCInWidth : function (width) {
+                if (!this.isNumber(width)) {
+                    console.error('error: number is required, but ' + typeof width + ' is given.');
+
+                    return false;
+                }
+
+                css.c_in.width = width + 'px';
+                doc.ecgDom.c_in.style.width = css.c_in.width;
+
+                return true;
+            },
+
+            /**
+             * 填充c_in容器
+             * 该方法会先清空c_in容器,然后根据需要填充bc和fc到c_in容器中
+             */
+            fillCIn : function () {
+                var c_in = doc.ecgDom.c_in;
+                var bc = doc.ecgDom.bc;
+                var fc = doc.ecgDom.fc;
+
+                // 清除c_in中原有的dom元素并生成新的dom元素
+                if (bc) {
+                    c_in.removeChild(bc);
+                    doc.ecgDom.bc = null;
+                }
+                for (var j = 0; j < fc.length; j++) {
+                    c_in.removeChild(fc[ j ]);
+                }
+                doc.ecgDom.fc = [];
+
+                // 生成背景canvas并添加到c_in容器中
+                doc.ecgDom.bc = innerUtil.createCanvas(true);
+                doc.ecgDom.c_in.appendChild(doc.ecgDom.bc);
+
+                // 生成需要的fc canvas
+                for (var i = 0; i < doc.fc.fcNum; i++) {
+                    var c = innerUtil.createCanvas(false);
+                    c.id = 'fc' + i;
+                    doc.ecgDom.fc.push(c);
+                    doc.ecgDom.c_in.appendChild(c);
+                }
+            }
         };
 
         /**
@@ -621,7 +707,7 @@ var ECG = (function (window, undefined) {
                     return false;
                 } else {
                     if ('width' in param) {
-                        doc.fcWidth = param.width;
+                        doc.fc.fcWidth = param.width;
                         doc.ecgDom.fc.width = param.width;
                     }
                     if ('height' in param) {
@@ -681,7 +767,7 @@ var ECG = (function (window, undefined) {
                 doc.ecgDom.bc.width = doc.width + marginL;
                 doc.tWidth = doc.width + marginL;
                 chart.drawBc();
-                doc.ecgDom.fc.style.marginLeft = marginL + 'px';
+                // doc.ecgDom.fc.style.marginLeft = marginL + 'px';
                 doc.ecgDom.c.style.width = doc.tWidth + 'px';
 
                 return true;
@@ -797,7 +883,7 @@ var ECG = (function (window, undefined) {
                 context.strokeStyle = doc.theme.grid;
                 context.lineWidth = 2;
                 // 这里绘制边框时左边要留出doc.marginL的宽度,用来放置说明文字
-                context.rect(doc.marginL, 1, doc.width - 1, doc.height - 1);
+                context.rect(doc.marginL, 1, doc.width * 2, doc.height - 1);
                 context.stroke();
 
                 // 将绘制的内容设置为ECG最外层容器的背景
@@ -924,19 +1010,23 @@ var ECG = (function (window, undefined) {
                         innerUtil.initECGProperty(obj);
                     }
 
+                    // 生成canvas的内层容器并添加到最外层容器中
+                    {
+                        var c_in = document.createElement('div');
+                        c_in.id = 'c_in';
+                        doc.ecgDom.c_in = c_in;
+                        doc.ecgDom.c.appendChild(c_in);
+                    }
+
                     // 分别生成背景和心电用的canvas
                     {
-                        doc.ecgDom.bc = innerUtil.createCanvas(true);
-                        doc.ecgDom.fc = innerUtil.createCanvas(false);
-
-                        doc.ecgDom.c.appendChild(doc.ecgDom.bc);
-                        doc.ecgDom.c.appendChild(doc.ecgDom.fc);
+                        innerUtil.fillCIn();
                     }
 
                     // 初始化doc.context.bcContext与doc.context.fcContext
                     {
                         doc.context.bcContext = doc.ecgDom.bc.getContext('2d');
-                        doc.context.fcContext = doc.ecgDom.fc.getContext('2d');
+                        doc.context.fcContext = doc.ecgDom.fc[ doc.fc.drawIndex ].getContext('2d');
                     }
 
                     // 标志ECG已被初始化
@@ -1016,14 +1106,24 @@ var ECG = (function (window, undefined) {
              * @returns {boolean}
              */
             clearFc : function () {
-                var context = doc.context.fcContext;
-                var fc = doc.ecgDom.fc;
-                var fcWidth = fc.width;
-                var fcHeight = fc.height;
-                context.clearRect(0, 0, fcWidth, fcHeight);
+                var fcs = doc.ecgDom.fc;
+                var len = fcs.length;
+                // 现在是fc组的形式来画心电, 所以循环清除画布内容
+                for (var i = 0; i < len; i++) {
+                    var fc = fcs[ i ];
+                    var context = fc.getContext('2d');
+                    var fcWidth = fc.width;
+                    var fcHeight = fc.height;
+                    context.clearRect(0, 0, fcWidth, fcHeight);
+                }
 
                 // 将所有心电线段的坐标重置
-                innerUtil.resetAllCoordinate();
+                innerUtil.resetAllCoordinate(true);
+
+                // 重置drawIndex
+                doc.fc.drawIndex = 0;
+                //
+                doc.context.fcContext = doc.ecgDom.fc[ 0 ].getContext('2d');
 
                 return true;
             },
@@ -1162,8 +1262,21 @@ var ECG = (function (window, undefined) {
                 var mul = val / doc.fc.ps.std;
                 doc.fc.ps.mul = mul;
 
-                var fcWidth = doc.cellWidth * doc.colsPerSecond * 72 * mul;
-                outUtil.setFcWH({width : fcWidth});
+                // 重新设置c_in的宽度
+                var tWidth = doc.cellWidth * doc.colsPerSecond * 72 * mul;
+
+                // 重新设置fcNum
+                doc.fc.fcNum = Math.ceil(tWidth / doc.fc.fcWidth);
+
+                // 重新计算设置c_in容器的宽度
+                var cInWidth = doc.fc.fcNum * doc.fc.fcWidth;
+                innerUtil.setCInWidth(cInWidth);
+
+                // 重新填充c_in容器
+                innerUtil.fillCIn();
+
+                // 设置样式
+                outUtil.setStyle(css);
 
                 if (!this.drawFc()) {
                     return false;
@@ -1226,4 +1339,4 @@ var ECG = (function (window, undefined) {
             inner : innerUtil
         };
     }
-)(window);
+)();

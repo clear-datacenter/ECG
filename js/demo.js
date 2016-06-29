@@ -10,6 +10,9 @@ $(function () {
         id : 'canvas'
     });
 
+    $('#begin').on('click', function () {
+        ECG.chart.drawFc();
+    });
     // todo 给增益绑定修改事件
     $('#gain').on('change', function (e) {
         var gain = $(this);

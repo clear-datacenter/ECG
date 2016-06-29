@@ -252,3 +252,17 @@ name：随便一条要绘制的心电的名字，该名字用来在ECG.doc.coord
 返回值：
 {boolean}: 设置成功返回true
 ```
+
+### innerUtil.setCInWidth()方法
+
+该方法用于设置c_in次外层容器的宽度。
+
+```javascript
+innerUtil.setCInWidth(width);
+
+参数：
+width: 要设置的次外层容器的宽度的数值
+
+返回值：
+{boolean}: 设置成功返回true，否则返回false
+```
