@@ -142,10 +142,6 @@ doc.fc = {
 }
 ```
 
-<h3>20、doc.originPosition</h3>
-
-存放描述文字以及心电图的基点位置在第几行，用于代替原来doc.descriptionWords.position字段，因为该字段要同时描述心电图的基点以及描述文字的基点，放在doc.descriptionWords对象中不合适。
-
 ### doc.ecgData
 
 存放72秒心电片段的数据，具体结构如下：
@@ -171,6 +167,12 @@ ecgData = {
 		'V5',
 		...
 	],
+	avgLead: [	// 每条心电的平均值
+		2.3,
+		0.2,
+		3.5,
+		......
+	]
 }
 ```
 

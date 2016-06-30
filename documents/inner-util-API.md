@@ -266,3 +266,18 @@ width: 要设置的次外层容器的宽度的数值
 返回值：
 {boolean}: 设置成功返回true，否则返回false
 ```
+
+### innerUtil.initScrollVal()方法
+
+该方法用于初始化左右滚动的距离，如果没有入参则默认滚动doc.ecgDom.c的宽度的距离。该方法会在当前c的左右滚动距离的基础上加上或者减去要滚动的距离。
+
+```javascript
+innerUtil.initScrollVal(val, right);
+
+参数：
+val：可选参数，滚动距离
+right：滚动方向是否向右，如果向左可以省略
+
+返回值：
+number｜Boolean：设置滚动距离成功或者不设置返回number，如果val设置错误会返回false
+```

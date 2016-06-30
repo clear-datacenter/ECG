@@ -178,3 +178,31 @@ name：在ECG.doc.themes中预定义好的主题的名字
 返回值：
 {boolean}: 设置成功返回true，否则返回false
 ```
+
+### outUtil.scrollLeft()方法
+
+该方法用于向左滚动心电图。
+
+```javascript
+outUtil.scrollLeft(val);
+
+参数：
+val：向左滚动的距离
+
+返回值：
+{boolean}: 成功返回true，否则返回false
+```
+
+### outUtil.scrollRight()方法
+
+该方法用于向右滚动心电图。
+
+```javascript
+outUtil.scrollLeft(val);
+
+参数：
+val：向右滚动的距离
+
+返回值：
+{boolean}: 成功返回true，否则返回false
+```

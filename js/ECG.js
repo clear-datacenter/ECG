@@ -27,7 +27,7 @@ var ECG = (function () {
             },
 
             width      : 1000,    // ECG容器的宽度
-            height     : 1001,     // ECG容器的高度
+            height     : 500,     // ECG容器的高度
             marginL    : 1,      // canvas左边边距,用来存放说明性的文字
             tWidth     : 1001,     // canvas元素的总宽度
             fcHeight   : 800,     // fc高度
@@ -37,7 +37,7 @@ var ECG = (function () {
             originPosition : 1,  // 描述文字以及心电图的基点位置在第几行
 
             descriptionWords : {
-                style    : {    // descriptionWords描述文字样式配置
+                style : {    // descriptionWords描述文字样式配置
                     V1    : {
                         ifDraw : true,
                         index  : 1,
@@ -45,21 +45,20 @@ var ECG = (function () {
                     },
                     V5    : {
                         ifDraw : true,
-                        index  : 2,
+                        index  : 4,
                         text   : 'V5'
                     },
                     aVF   : {
                         ifDraw : true,
-                        index  : 3,
+                        index  : 7,
                         text   : 'aVF'
                     },
                     Pacer : {
                         ifDraw : true,
-                        index  : 4,
+                        index  : 9,
                         text   : 'Pacer'
                     }
                 },
-                position : 4 // 可选项, 描述文字在自己的区域内第几行,已被doc.originPosition替代
             },
             // 主要存放doc.ecgDom.bc的配置信息,后面会将前面的配置逐步放到bc中
             bc               : {
@@ -81,19 +80,19 @@ var ECG = (function () {
                 coordinate : {
                     V1    : {
                         x : 0,
-                        y : 160
+                        y : 50
                     },
                     V5    : {
                         x : 0,
-                        y : 360
+                        y : 200
                     },
                     aVF   : {
                         x : 0,
-                        y : 560
+                        y : 350
                     },
                     Pacer : {
                         x : 0,
-                        y : 760
+                        y : 450
                     }
                 },
                 // 每个fc的宽度
@@ -115,7 +114,8 @@ var ECG = (function () {
             ecgData : {
                 result        : {},
                 ecgPartBlocks : [],
-                hwLeadConfig  : []
+                hwLeadConfig  : [],
+                avgLead       : []
             },
 
             // 存放当前心电主题样式
@@ -286,14 +286,8 @@ var ECG = (function () {
              */
             getBaseY : function (name) {
                 var index = doc.descriptionWords.style[ name ].index;
-                var position = doc.originPosition;
-                var rowsPerLine = doc.rowsPerLine;
-                var baseY = doc.cellHeight * (index * rowsPerLine -
-                                              (rowsPerLine - position
-                                              )
-                    );
 
-                return baseY;
+                return doc.cellHeight * index;
             },
 
             /**
@@ -451,9 +445,8 @@ var ECG = (function () {
                     var subKey = keys[ i ];
                     coor[ subKey ][ 'x' ] = 0;
                     if (ifY) {
-                        coor[ subKey ][ 'y' ] = ((doc.descriptionWords.style[ subKey ][ 'index' ] - 1
-                                                 ) * doc.rowsPerLine + doc.originPosition
-                                                ) * doc.cellHeight;
+                        coor[ subKey ][ 'y' ] =
+                            doc.descriptionWords.style[ subKey ][ 'index' ] * doc.cellHeight;
                     }
                 }
 
@@ -664,6 +657,39 @@ var ECG = (function () {
                     doc.ecgDom.fc.push(c);
                     doc.ecgDom.c_in.appendChild(c);
                 }
+            },
+
+            /**
+             * 初始化doc.ecgDom.c左右滚动的距离
+             *
+             * @param val
+             * @param right
+             * @returns {*}
+             */
+            initScrollVal : function (val, right) {
+                var c = doc.ecgDom.c;
+                var space = 0;
+                if (!val) { // 如果没有val入参则滚动doc.ecgDom.c的宽度的距离
+                    if (right) {
+                        space = c.scrollLeft - c.offsetWidth;
+                    } else {
+                        space = c.scrollLeft + c.offsetWidth;
+                    }
+                } else {
+                    if (typeof val == 'number') {
+                        if (right) {
+                            space = c.scrollLeft - val;
+                        } else {
+                            space = c.scrollLeft + val;
+                        }
+                    } else {
+                        console.error('number required but ' + typeof val + 'given.');
+
+                        return false;
+                    }
+                }
+
+                return space;
             }
         };
 
@@ -828,7 +854,6 @@ var ECG = (function () {
              * @returns {boolean}
              */
             setDescriptionWords : function () {
-                var position = doc.originPosition;
                 var style = doc.descriptionWords.style;
                 var keys = Object.keys(style);
 
@@ -844,23 +869,13 @@ var ECG = (function () {
                     if (!subStyle.ifDraw) {
                         continue;
                     }
-                    // 检测说明文字的位置是否正确, 正常情况position < doc.rowsPerLine
-                    if (0 > (doc.rowsPerLine - position
-                        )) {
-                        console.error(
-                            'error: the value of position is more than rowsPerLine, outUtil.setDescriptionWords');
-                        continue;
-                    }
 
                     bcContext.beginPath();
                     // 修改字体样式
                     bcContext.fillStyle = doc.theme.font;
                     // x,y分别为fillText的横坐标和纵坐标
                     var x = doc.marginL;
-                    var y = (subStyle.index * doc.rowsPerLine -
-                             (doc.rowsPerLine - position
-                             )
-                            ) * doc.cellHeight;
+                    var y = subStyle.index * doc.cellHeight;
                     bcContext.fillText(subStyle.text, x, y);
                 }
 
@@ -928,6 +943,7 @@ var ECG = (function () {
                 ecgData.result = result;
                 ecgData.hwLeadConfig = result.hwLeadConfig;
                 ecgData.ecgPartBlocks = result.ecgPartBlocks;
+                ecgData.avgLead = result.avgLead;
 
                 return true;
             },
@@ -977,6 +993,74 @@ var ECG = (function () {
 
                 return true;
             },
+
+            /**
+             * 心电向左滚动
+             *
+             * @param val
+             * @returns {boolean}
+             */
+            scrollLeft : function (val) {
+                var result = innerUtil.initScrollVal(val);
+                if (false === result) {
+                    return false;
+                }
+                doc.ecgDom.c.scrollLeft = result;
+
+                return true;
+            },
+
+            /**
+             * 心电向右滚动
+             *
+             * @param val
+             * @returns {boolean}
+             */
+            scrollRight : function (val) {
+                var result = innerUtil.initScrollVal(val, true);
+                if (false === result) {
+                    return false;
+                }
+
+                doc.ecgDom.c.scrollLeft = result;
+
+                return true;
+            },
+
+            /**
+             * 心电向上滚动
+             */
+            scrollTop : function () {
+                var style = doc.descriptionWords.style;
+                var keys = Object.keys(style);
+                var len = keys.length;
+
+                for (var i = 0; i < len; i++) {
+                    var sk = keys[ i ];
+                    style[ sk ].index--;
+                }
+
+                chart.drawBc();
+                chart.drawFc();
+            },
+
+            /**
+             * 心电向下滚动
+             */
+            scrollBottom : function () {
+                var style = doc.descriptionWords.style;
+                var keys = Object.keys(style);
+                var len = keys.length;
+
+                for (var i = 0; i < len; i++) {
+                    var sk = keys[ i ];
+                    style[ sk ].index++;
+                }
+
+                chart.drawBc();
+                chart.drawFc();
+            }
+
         };
 
         /**
@@ -1302,6 +1386,7 @@ var ECG = (function () {
                     var ecgPartBlocks = ecgData.ecgPartBlocks;
                     var allDrawECG = innerUtil.getAllDrawECG();
                     var allDrawECGLen = allDrawECG.length;
+                    var avgLead = ecgData.avgLead;
 
                     for (var i = 0; i < 18; i++) {
                         var subBlocks = ecgPartBlocks[ i ];
@@ -1319,7 +1404,7 @@ var ECG = (function () {
                             var dataLen = data.length;
 
                             for (var k = 0; k < dataLen; k++) {
-                                var v = data[ k ];
+                                var v = data[ k ] - avgLead[ index ];
                                 innerUtil.drawECG(name, v);
                             }
                         }

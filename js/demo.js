@@ -19,12 +19,23 @@ $(function () {
         var value = parseInt(gain.val());
         ECG.chart.setGain(value);
     });
-
-    // todo 给奏素绑定修改事件
+    // todo 给走速绑定修改事件
     $('#ps').on('change', function (e) {
         var ps = $(this);
         var value = parseFloat(ps.val());
         ECG.chart.setPs(value);
+    });
+    $('#top').on('click', function () {
+        ECG.util.scrollTop();
+    });
+    $('#bottom').on('click', function () {
+        ECG.util.scrollBottom();
+    });
+    $('#left').on('click', function () {
+        ECG.util.scrollLeft();
+    });
+    $('#right').on('click', function () {
+        ECG.util.scrollRight();
     });
 
     // TODO 获取服务器数据
@@ -44,6 +55,7 @@ $(function () {
                     window.ecgPartBlocks = result.ecgPartBlocks;
                     console.log('data is ready');
                     ECG.util.setEcgData(data.result);
+                    ECG.chart.drawFc();
                 }
             }
         )
