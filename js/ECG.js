@@ -648,6 +648,7 @@ var ECG = (function () {
 
                 // 生成背景canvas并添加到c_in容器中
                 doc.ecgDom.bc = innerUtil.createCanvas(true);
+                doc.context.bcContext = doc.ecgDom.bc.getContext('2d');
                 doc.ecgDom.c_in.appendChild(doc.ecgDom.bc);
 
                 // 生成需要的fc canvas
@@ -881,10 +882,6 @@ var ECG = (function () {
 
                 // 还原context
                 bcContext.restore();
-
-                if (!innerUtil.setECGBackground()) {
-                    return false;
-                }
 
                 return true;
             },
@@ -1172,7 +1169,7 @@ var ECG = (function () {
                 {
                     innerUtil.drawPoints();
                 }
-                // 绘制左边说明文字
+                // 绘制背景中的描述文字
                 {
                     outUtil.setDescriptionWords();
                 }
@@ -1346,7 +1343,7 @@ var ECG = (function () {
                 var mul = val / doc.fc.ps.std;
                 doc.fc.ps.mul = mul;
 
-                // 重新设置c_in的宽度
+                // 重新计算c_in容器的宽度
                 var tWidth = doc.cellWidth * doc.colsPerSecond * 72 * mul;
 
                 // 重新设置fcNum
@@ -1359,8 +1356,10 @@ var ECG = (function () {
                 // 重新填充c_in容器
                 innerUtil.fillCIn();
 
-                // 设置样式
-                outUtil.setStyle(css);
+                this.drawBc();
+
+                // // 设置样式
+                // outUtil.setStyle(css);
 
                 if (!this.drawFc()) {
                     return false;
