@@ -1210,100 +1210,83 @@ var ECG = (function () {
             },
 
             /**
-             * 绘制心电图中的V1这条线当前位置到下一位置的线段
-             *
-             * @param v
-             */
-            drawV1 : function (v) {
-                innerUtil.drawECG('v1', v);
-            },
-
-            /**
-             * 绘制心电图中的V5这条线当前位置到下一位置的线段
-             *
-             * @param v
-             */
-            drawV5 : function (v) {
-                innerUtil.drawECG('v5', v);
-            },
-
-            /**
-             * 绘制心电图中的avf这条线当前位置到下一位置的线段
-             *
-             * @param v
-             */
-            drawAvf : function (v) {
-                innerUtil.drawECG('avf', v);
-            },
-
-            /**
-             * 绘制心电图中的pacer这条线当前位置到下一位置的线段
-             *
-             * @param v
-             */
-            drawPacer : function (v) {
-                innerUtil.drawECG('pacer', v);
-            },
-
-            /**
-             * 获取当前要清除的心电的区域
-             *
-             * @param name 要清除的心电的名字
-             * @returns {*} 要清除心电区域的坐标
-             */
-            getClearCoordinate : function (name) {
-                if (doc.descriptionWords.style[ name ]) {
-                    var obj = doc.descriptionWords.style[ name ];
-                    var index = obj.index;
-                    var rowsPerLine = doc.rowsPerLine;
-                    var clearH1 = (index - 1
-                                  ) * rowsPerLine * doc.cellHeight;
-                    var clearH2 = rowsPerLine * doc.cellHeight;
-                    var width = doc.ecgDom.fc.width;
-
-                    return {
-                        clearH1 : clearH1,
-                        clearH2 : clearH2,
-                        width   : width
-                    };
-                }
-
-                return false;
-            },
-
-            /**
-             * 擦掉指定的心电图
+             * 将指定心电设置为不可显示
              *
              * @param name
              * @returns {boolean}
              */
-            clearECG : function (name) {
+            hideECG : function (name) {
                 if (name) {
-                    var context = doc.context.fcContext;
+                    var style = doc.descriptionWords.style;
                     if (innerUtil.isArray(name)) {
                         var len = name.length;
                         for (var i = 0; i < len; i++) {
                             var subName = name[ i ];
-                            var coor = chart.getClearCoordinate(subName);
-                            if (coor) {
-                                context.save();
-                                context.clearRect(0, coor.clearH1, coor.width, coor.clearH2);
-                                context.restore();
+                            if (style[ subName ]) {
+                                style[ subName ].ifDraw = false;
+
+                                this.drawFc();
+
+                                return true;
+                            } else {
+                                console.error('error: could not find ' + subName + ' in doc.descriptionWords.style');
+
+                                return false;
                             }
                         }
-                    } else if (innerUtil.isString(name)) {
-                        var coor = chart.getClearCoordinate(name);
-                        if (coor) {
-                            context.save();
-                            context.clearRect(0, coor.clearH1, coor.width, coor.clearH2);
-                            context.restore();
+                    } else {
+                        if (style[ name ]) {
+                            style[ name ].ifDraw = false;
+
+                            this.drawFc();
+
+                            return true;
+                        } else {
+                            console.error('error: could not find ' + name + ' in doc.descriptionWords.style');
+
+                            return false;
                         }
                     }
-
-                    return true;
                 }
+            },
 
-                return false;
+            /**
+             * 将指定心电设置为显示
+             *
+             * @param name
+             * @returns {boolean}
+             */
+            showECG : function (name) {
+                if (name) {
+                    var style = doc.descriptionWords.style;
+                    if (innerUtil.isArray(name)) {
+                        var len = name.length;
+                        for (var i = 0; i < len; i++) {
+                            var subName = name[ i ];
+                            if (style[ subName ]) {
+                                style[ subName ].ifDraw = true;
+
+                                this.drawFc();
+
+                                return true;
+                            } else {
+                                console.error('error: can not find ' + name + ' in doc.descriptionWords.style.');
+                                return false;
+                            }
+                        }
+                    } else {
+                        if (style[ name ]) {
+                            style[ name ].ifDraw = true;
+
+                            this.drawFc();
+
+                            return true;
+                        } else {
+                            console.error('error: can not find ' + name + ' doc.descriptionWords.style.');
+                            return false;
+                        }
+                    }
+                }
             },
 
             /**
@@ -1358,8 +1341,8 @@ var ECG = (function () {
 
                 this.drawBc();
 
-                // // 设置样式
-                // outUtil.setStyle(css);
+                // 设置样式
+                outUtil.setStyle(css);
 
                 if (!this.drawFc()) {
                     return false;

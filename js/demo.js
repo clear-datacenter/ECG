@@ -38,6 +38,19 @@ $(function () {
         ECG.util.scrollRight();
     });
 
+    {
+        var ecgs = $('#ecg-group input');
+        for (var i = 0; i < ecgs.length; i++) {
+            $(ecgs[ i ]).on('click', function () {
+                if ($(this).attr('checked') == true) {
+                    ECG.chart.showECG($(this).attr('id'));
+                } else {
+                    ECG.chart.hideECG('V1');
+                }
+            });
+        }
+    }
+
     // TODO 获取服务器数据
     if (true) {
         $.ajax(
