@@ -1374,7 +1374,7 @@ var ECG = (function () {
                         var subBlocks = ecgPartBlocks[ i ];
                         var ecgPartBlocksData = subBlocks[ 'ecgPartBlockData' ];
                         var ecgPartBlocksHead = subBlocks[ 'ecgPartBlockHead' ];
-                        var time = ecgPartBlocksHead[ 'headTime' ];
+                        var time = ecgPartBlocksHead[ 'headTime' ] + ' 心律: ' + ecgPartBlocksHead[ 'hrVal' ];
 
                         // 绘制心电时间
                         innerUtil.drawTime(time, allDrawECG[ 0 ]);
@@ -1386,7 +1386,10 @@ var ECG = (function () {
                             var dataLen = data.length;
 
                             for (var k = 0; k < dataLen; k++) {
-                                var v = data[ k ] - avgLead[ index ];
+                                var v = data[ k ];
+                                if (avgLead) {
+                                    v -= avgLead[ index ];
+                                }
                                 innerUtil.drawECG(name, v);
                             }
                         }

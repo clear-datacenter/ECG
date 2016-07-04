@@ -45,7 +45,7 @@ $(function () {
                 if ($(this).attr('checked') == true) {
                     ECG.chart.showECG($(this).attr('id'));
                 } else {
-                    ECG.chart.hideECG('V1');
+                    ECG.chart.hideECG($(this).attr('id'));
                 }
             });
         }
