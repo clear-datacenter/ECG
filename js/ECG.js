@@ -48,10 +48,10 @@ var ECG = (function () {
                         index  : 4,
                         text   : 'V5'
                     },
-                    aVF   : {
+                    avF   : {
                         ifDraw : true,
                         index  : 7,
-                        text   : 'aVF'
+                        text   : 'avF'
                     },
                     Pacer : {
                         ifDraw : true,
@@ -86,7 +86,7 @@ var ECG = (function () {
                         x : 0,
                         y : 200
                     },
-                    aVF   : {
+                    avF   : {
                         x : 0,
                         y : 350
                     },
