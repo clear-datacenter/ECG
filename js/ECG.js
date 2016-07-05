@@ -638,11 +638,20 @@ var ECG = (function () {
 
                 // 清除c_in中原有的dom元素并生成新的dom元素
                 if (bc) {
-                    c_in.removeChild(bc);
-                    doc.ecgDom.bc = null;
+                    try {
+                        c_in.removeChild(bc);
+                    } catch (e) {
+                        console.error(e);
+                    } finally {
+                        doc.ecgDom.bc = null;
+                    }
                 }
                 for (var j = 0; j < fc.length; j++) {
-                    c_in.removeChild(fc[ j ]);
+                    try {
+                        c_in.removeChild(fc[ j ]);
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }
                 doc.ecgDom.fc = [];
 
