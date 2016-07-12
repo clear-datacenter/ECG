@@ -87,4 +87,24 @@ val：要设置的新的的增益
 
 该方法用于重新设置心电的走速，入参要求必须为数字，包括整型和浮点类型，不能是字符串形式的数字。
 
+```javascript
+chart.setPs(val);
+
+参数：
+val：要设置的新的走速
+
+返回值：
+{boolean} 
+```
+
 <h3>chart.drawFc()方法</h3>
+
+该方法用于绘制fc中各个canvas中要绘制的心电图形和心电时间。
+
+```javascript
+chart.drawFc();
+
+参数：无
+
+返回值：{boolean} 绘制成功返回true
+```

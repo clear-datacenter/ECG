@@ -48,10 +48,10 @@ var ECG = (function () {
                         index  : 4,
                         text   : 'V5'
                     },
-                    avF   : {
+                    aVF   : {
                         ifDraw : true,
                         index  : 7,
-                        text   : 'avF'
+                        text   : 'aVF'
                     },
                     Pacer : {
                         ifDraw : true,
@@ -86,7 +86,7 @@ var ECG = (function () {
                         x : 0,
                         y : 200
                     },
-                    avF   : {
+                    aVF   : {
                         x : 0,
                         y : 350
                     },
@@ -96,9 +96,9 @@ var ECG = (function () {
                     }
                 },
                 // 每个fc的宽度
-                fcWidth    : 6000,
+                fcWidth    : 3000,
                 // 一共需要多少个fc
-                fcNum      : 3,
+                fcNum      : 6,
                 drawIndex  : 0
             },
 
@@ -1234,6 +1234,7 @@ var ECG = (function () {
                             if (style[ subName ]) {
                                 style[ subName ].ifDraw = false;
 
+                                this.drawBc();
                                 this.drawFc();
 
                                 return true;
@@ -1247,6 +1248,7 @@ var ECG = (function () {
                         if (style[ name ]) {
                             style[ name ].ifDraw = false;
 
+                            this.drawBc();
                             this.drawFc();
 
                             return true;
@@ -1275,6 +1277,7 @@ var ECG = (function () {
                             if (style[ subName ]) {
                                 style[ subName ].ifDraw = true;
 
+                                this.drawBc();
                                 this.drawFc();
 
                                 return true;
@@ -1287,6 +1290,7 @@ var ECG = (function () {
                         if (style[ name ]) {
                             style[ name ].ifDraw = true;
 
+                            this.drawBc();
                             this.drawFc();
 
                             return true;
@@ -1358,6 +1362,10 @@ var ECG = (function () {
                 }
 
                 return true;
+            },
+
+            scale : function (val) {
+
             },
 
             /**

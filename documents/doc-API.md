@@ -57,20 +57,20 @@ doc.ecgDom.bc中描述三条心电图多说明文字配置，该属性是一个j
 ```javascript
 descriptionWords : { 
                 style    : {    // descriptionWords描述文字样式配置
-                    v1  : {
+                    V1  : {
                         ifDraw : true,
                         color  : '#333',
                         index  : 1,
                         text   : 'v1',
                     },
-                    v5  : {
+                    V5  : {
                         ifDraw : true,
                         color  : '#333',
                         index  : 2,
                         text   : 'v5'
                     }
                     ,
-                    avf : {
+                    avF : {
                         ifDraw : true,
                         color  : '#333',
                         index  : 3,
