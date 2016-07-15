@@ -120,7 +120,7 @@ obj：要检测的对象
 返回值：如果被检测对象为字符串则返回true，否则返回false
 ```
 
-<h3>10、innerUtil.resetAllCoordinate()方法</h3>
+### innerUtil.resetAllCoordinate()方法
 
 该方法用于重置所有心电当前位置的坐标为初始坐标。
 
@@ -131,6 +131,21 @@ innerUtil.resetAllCoordinate();
 
 返回值：
 {boolean} 初始成功返回true，否则返回false。
+```
+
+### innerUtil.resetCoordinateByName()方法
+
+该方法用于重置心电的坐标，需要指定重置心电的名字。
+
+```javascript
+innerUtil.resetCoordinateByName(name, ifY);
+
+参数：
+name：需要重置心电坐标的名字
+ifY：是否需要重置y坐标
+
+返回值：
+{boolean}: 初始化成功返回true，否则返回false
 ```
 
 <h3>11、innerUtil.isNumber()方法</h3>
@@ -159,20 +174,6 @@ obj：要检测的对象
 
 返回值：
 {boolean}：如果入参为Object类型则返回true，否则返回false。
-```
-
-### 13、innerUtil.isEmptyObj()方法
-
-该方法用于检测入参是否为空的object。
-
-```javascript
-innerUtil.isEmptyObj(obj);
-
-参数：
-obj：要检测的对象
-
-返回值：
-{boolean}：入参为空返回true，否则返回false。
 ```
 
 ### innerUtil.getEcgIndex()方法
