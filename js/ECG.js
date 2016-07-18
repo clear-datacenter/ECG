@@ -1378,7 +1378,9 @@ var ECG = (function () {
                 }
 
                 return true;
-            }
+            },
+
+
         };
 
         // 返回
