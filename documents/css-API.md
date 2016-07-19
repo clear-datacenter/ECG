@@ -9,6 +9,9 @@ var css = {
 	c: {
 	
 	},
+	c_in: {
+	
+	},
 	bc: {
 	
 	}
@@ -36,3 +39,25 @@ bc: {
 	display: none;
 }
 ```
+
+### css.c_in
+
+css.c_in对象存放ECG内层容器的样式。
+
+
+## tCss部分
+该对象主要用于存放缩略图中各个部分的样式。
+
+### 总体结构
+```javascript
+var tCss = {
+	t: {},
+	tc: {}
+};
+```
+
+### tCss.t
+存放缩略图外层容器的样式。
+
+### tCss.tc
+存放缩略图使用的canvas的样式。

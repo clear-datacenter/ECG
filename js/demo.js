@@ -9,6 +9,9 @@ $(function () {
     ECG.chart.init({
         id : 'canvas'
     });
+    ECG.chart.initThumbnail({
+        id : 'thumbnail'
+    });
 
     $('#begin').on('click', function () {
         ECG.chart.drawFc();
@@ -38,6 +41,7 @@ $(function () {
         ECG.util.scrollRight();
     });
 
+    // todo 给显示或者不显示心电绑定事件
     {
         var ecgs = $('#ecg-group input');
         for (var i = 0; i < ecgs.length; i++) {
@@ -53,11 +57,11 @@ $(function () {
 
     {
         var data = {
-            "code": "0000",
-            "msg": "成功",
-            "result": {
-                "avgHR": 82.611,
-                "avgLead": [
+            "code"   : "0000",
+            "msg"    : "成功",
+            "result" : {
+                "avgHR"              : 82.611,
+                "avgLead"            : [
                     2.659968,
                     0.142284,
                     -1.034532,
@@ -65,36 +69,36 @@ $(function () {
                     0.0,
                     -1.184772
                 ],
-                "convertLeadConfig": [
+                "convertLeadConfig"  : [
                     "aVF"
                 ],
-                "curLeadConfig": [
+                "curLeadConfig"      : [
                     "V1",
                     "V5",
                     "aVF",
                     "Pacer"
                 ],
-                "ecgConvertLeads": [
+                "ecgConvertLeads"    : [
                     {
-                        "baseIISequence": 0,
-                        "baseOneCaption": "I",
-                        "baseOneSequence": 0,
-                        "baseThreeSequence": 0,
-                        "baseTwoCaption": "II",
-                        "baseTwoSequence": 1,
-                        "baseV1Sequence": 0,
-                        "baseV5Sequence": 0,
-                        "dataLength": 500,
-                        "ecgDataLength": 2,
-                        "isEsi": false,
-                        "leadCount": 5,
-                        "leadToConvert": "aVF"
+                        "baseIISequence"    : 0,
+                        "baseOneCaption"    : "I",
+                        "baseOneSequence"   : 0,
+                        "baseThreeSequence" : 0,
+                        "baseTwoCaption"    : "II",
+                        "baseTwoSequence"   : 1,
+                        "baseV1Sequence"    : 0,
+                        "baseV5Sequence"    : 0,
+                        "dataLength"        : 500,
+                        "ecgDataLength"     : 2,
+                        "isEsi"             : false,
+                        "leadCount"         : 5,
+                        "leadToConvert"     : "aVF"
                     }
                 ],
-                "ecgDataLength": 2,
-                "ecgPartBlocks": [
+                "ecgDataLength"      : 2,
+                "ecgPartBlocks"      : [
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.472,
                                 2.472,
@@ -3108,16 +3112,16 @@ $(function () {
                                 -1.224
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:02:39",
-                            "hrVal": 83,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 3,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:02:39",
+                            "hrVal"        : 83,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 3,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             108011,
                             3636,
                             -45342,
@@ -3127,7 +3131,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.544,
                                 2.664,
@@ -6141,16 +6145,16 @@ $(function () {
                                 -1.224
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:02:43",
-                            "hrVal": 83,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 2,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:02:43",
+                            "hrVal"        : 83,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 2,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             110861,
                             5907,
                             -43226,
@@ -6160,7 +6164,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.676,
                                 2.676,
@@ -9174,16 +9178,16 @@ $(function () {
                                 -1.2
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:02:47",
-                            "hrVal": 84,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 3,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:02:47",
+                            "hrVal"        : 84,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 3,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             112355,
                             7421,
                             -43406,
@@ -9193,7 +9197,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.676,
                                 2.664,
@@ -12207,16 +12211,16 @@ $(function () {
                                 -1.092
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:02:51",
-                            "hrVal": 84,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:02:51",
+                            "hrVal"        : 84,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             112786,
                             9112,
                             -43170,
@@ -12226,7 +12230,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.7,
                                 2.712,
@@ -15240,16 +15244,16 @@ $(function () {
                                 -1.032
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:02:55",
-                            "hrVal": 83,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:02:55",
+                            "hrVal"        : 83,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             112515,
                             8946,
                             -43021,
@@ -15259,7 +15263,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.712,
                                 2.592,
@@ -18273,16 +18277,16 @@ $(function () {
                                 -1.236
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:02:59",
-                            "hrVal": 83,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:02:59",
+                            "hrVal"        : 83,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             111200,
                             7288,
                             -43146,
@@ -18292,7 +18296,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.64,
                                 2.64,
@@ -21306,16 +21310,16 @@ $(function () {
                                 -1.188
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:03",
-                            "hrVal": 82,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:03",
+                            "hrVal"        : 82,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             112211,
                             7818,
                             -42627,
@@ -21325,7 +21329,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.7,
                                 2.712,
@@ -24339,16 +24343,16 @@ $(function () {
                                 -0.996
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:07",
-                            "hrVal": 80,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:07",
+                            "hrVal"        : 80,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             112220,
                             8644,
                             -42509,
@@ -24358,7 +24362,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.844,
                                 2.82,
@@ -27372,16 +27376,16 @@ $(function () {
                                 -1.236
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:11",
-                            "hrVal": 80,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:11",
+                            "hrVal"        : 80,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             110464,
                             8485,
                             -42441,
@@ -27391,7 +27395,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.484,
                                 2.496,
@@ -30405,16 +30409,16 @@ $(function () {
                                 -1.2
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:15",
-                            "hrVal": 80,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:15",
+                            "hrVal"        : 80,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             108083,
                             5250,
                             -46127,
@@ -30424,7 +30428,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.628,
                                 2.64,
@@ -33438,16 +33442,16 @@ $(function () {
                                 -1.236
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:19",
-                            "hrVal": 79,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:19",
+                            "hrVal"        : 79,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             108374,
                             6105,
                             -44124,
@@ -33457,7 +33461,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.496,
                                 2.496,
@@ -36471,16 +36475,16 @@ $(function () {
                                 -0.816
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:23",
-                            "hrVal": 81,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:23",
+                            "hrVal"        : 81,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             106629,
                             18115,
                             -47368,
@@ -36490,7 +36494,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.568,
                                 2.556,
@@ -39504,16 +39508,16 @@ $(function () {
                                 -1.152
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:27",
-                            "hrVal": 85,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:27",
+                            "hrVal"        : 85,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             109985,
                             17605,
                             -49298,
@@ -39523,7 +39527,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.628,
                                 2.58,
@@ -42537,16 +42541,16 @@ $(function () {
                                 -1.332
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:31",
-                            "hrVal": 87,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:31",
+                            "hrVal"        : 87,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             111170,
                             3694,
                             -41465,
@@ -42556,7 +42560,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.64,
                                 2.64,
@@ -45570,16 +45574,16 @@ $(function () {
                                 -1.752
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:35",
-                            "hrVal": 85,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:35",
+                            "hrVal"        : 85,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             112312,
                             1642,
                             -31447,
@@ -45589,7 +45593,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.652,
                                 2.7,
@@ -48603,16 +48607,16 @@ $(function () {
                                 -1.368
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:39",
-                            "hrVal": 84,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:39",
+                            "hrVal"        : 84,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             113130,
                             1768,
                             -37387,
@@ -48622,7 +48626,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.616,
                                 2.628,
@@ -51636,16 +51640,16 @@ $(function () {
                                 -1.656
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:43",
-                            "hrVal": 82,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:43",
+                            "hrVal"        : 82,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             110255,
                             -5859,
                             -44580,
@@ -51655,7 +51659,7 @@ $(function () {
                         ]
                     },
                     {
-                        "ecgPartBlockData": [
+                        "ecgPartBlockData" : [
                             [
                                 2.652,
                                 2.604,
@@ -54669,16 +54673,16 @@ $(function () {
                                 -1.632
                             ]
                         ],
-                        "ecgPartBlockHead": {
-                            "headTime": "2016-06-13 14:03:47",
-                            "hrVal": 82,
-                            "ratio": 10,
-                            "sendType": 1,
-                            "sendTypeName": "手动",
-                            "stVal": 0,
-                            "warnType": 0
+                        "ecgPartBlockHead" : {
+                            "headTime"     : "2016-06-13 14:03:47",
+                            "hrVal"        : 82,
+                            "ratio"        : 10,
+                            "sendType"     : 1,
+                            "sendTypeName" : "手动",
+                            "stVal"        : 0,
+                            "warnType"     : 0
                         },
-                        "total": [
+                        "total"            : [
                             112417,
                             -8867,
                             -45215,
@@ -54688,9 +54692,9 @@ $(function () {
                         ]
                     }
                 ],
-                "equipLeadInfoType": "2",
-                "hmtdType": "0",
-                "hwLeadConfig": [
+                "equipLeadInfoType"  : "2",
+                "hmtdType"           : "0",
+                "hwLeadConfig"       : [
                     "I",
                     "II",
                     "V1",
@@ -54698,17 +54702,18 @@ $(function () {
                     "Pacer",
                     "aVF"
                 ],
-                "isShowAllLead": "1",
-                "maxValue": 32768,
-                "mvPerData": 0.012,
-                "realInputMaxValue": 400.0,
-                "sampleRate": 125,
-                "sampleTimeInterval": 8.0,
-                "sendType": "0"
+                "isShowAllLead"      : "1",
+                "maxValue"           : 32768,
+                "mvPerData"          : 0.012,
+                "realInputMaxValue"  : 400.0,
+                "sampleRate"         : 125,
+                "sampleTimeInterval" : 8.0,
+                "sendType"           : "0"
             }
         };
         ECG.util.setEcgData(data.result);
         console.log('data is ready');
         ECG.chart.drawFc();
+        ECG.chart.drawTc('V1');
     }
 });

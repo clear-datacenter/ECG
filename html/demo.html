@@ -55,8 +55,27 @@
     </div>
 </div>
 <div id="canvas"></div>
+<div>
+    <label for="thumbnail-se">导联</label>
+    <select id="thumbnail-se">
+        <option value="V1">V1</option>
+        <option value="V5">V5</option>
+        <option value="aVF">aVF</option>
+        <option value="Pacer">Pacer</option>
+    </select>
+</div>
+<div id="thumbnail" style="margin-top: 10px;"></div>
 <noscript>
     <p>本页面需要浏览器支持(启用)javascript。</p>
 </noscript>
+<script>
+    // 缩略图绑定事件
+    $(function () {
+        $('#thumbnail-se').on('change', function () {
+            var val = $(this).val();
+            ECG.chart.drawTc(val);
+        });
+    });
+</script>
 </body>
 </html>

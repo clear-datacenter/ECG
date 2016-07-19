@@ -10,6 +10,7 @@ ecgDom = {
 	c_in: dom,	// ECG容器的次外层容器
 	bc: dom,	// 作为背景的canvas元素
 	fc: dom		// 作为展示心电的canvas元素
+	t：dom			// ECG的缩略图容器
 };
 ```
 
@@ -139,6 +140,23 @@ doc.fc = {
 	fcNum: 3,
 	// 正在绘制内容的canvas的索引
 	drawIndex: 0
+}
+```
+
+### doc.tc
+
+该对象用于存放tc的配置信息，tc只显示一条心电的图形，所以coordinate对象中只保存一对坐标值。该对象的结构如下：
+
+```javascript
+doc.tc = {
+	coordinate: {
+		x: 2,
+		y: 0
+	}，
+	// 由于一条线段绘制不完，所以需要换行，line表示当前是绘制的第几行，用于计算基线位置
+	line：1，
+	// 每条数据需要多少个像素表示（x轴）
+	pxPerData
 }
 ```
 

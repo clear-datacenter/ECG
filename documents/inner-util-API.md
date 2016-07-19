@@ -1,8 +1,8 @@
-<h2>ECG.js文档-innerUtil部分</h2>
+## ECG.js文档-innerUtil部分
 
 **注：该文档为ECG.js中innerUtil部分的文档，innerUtil对象不可获取，只能在IIFE函数内部调用。**
 
-<h3>1、innerUtil.windowToCanvas()方法</h3>
+### innerUtil.windowToCanvas()方法
 
 该方法用于获取鼠标相对于canvas边界，在canvas内部的坐标。
 
@@ -21,12 +21,12 @@ y: 鼠标在window中的纵坐标
 }
 ```
 
-<h3>2、innerUtil.checkECG()方法</h3>
+### innerUtil.checkECGContainer()方法
 
 该方法检测ECG容器是否声明。
 
 ```javascript
-innerUtil.checkECG(id);
+innerUtil.checkECGContainer(id);
 
 参数：
 id：String		// 必填，ECG容器的id
@@ -35,21 +35,21 @@ id：String		// 必填，ECG容器的id
 boolean：存在则返回true，不存在返回false
 ```
 
-<h3>3、innerUtil.initECGProperty()方法</h3>
+### innerUtil.checkThumbnailContainer()方法
 
-设置ECG容器参数，如果参数错误或者未设置，则使用默认值。
+该方法检测ECG缩略图容器是否声明。
 
 ```javascript
-innerUtil.initECGProperty(obj);
+innerUtil.checkThumbnailContainer(id);
 
-参数:
-obj {
-	width: number,	// 宽度，必填
-	height: number	// 高度，必填
-}
+参数：
+id: String	// 必填，ECG缩略图容器的id
+
+返回值：
+{boolean}: 存在则返回true，否则返回false
 ```
 
-<h3>4、innerUtil.createCanvas()方法</h3>
+### innerUtil.createCanvas()方法
 
 ```javascript
 innerUtil.createCanvas(isBc);
@@ -61,7 +61,20 @@ isBC: boolean;	// 该canvas是背景还是前景
 canvas：domObj	// 生成的dom元素
 ```
 
-<h3>5、innerUtil.setECGBackground()方法</h3>
+### innerUtil.createThumbnailC()方法
+
+生成缩略图使用的canvas并返回。
+
+```javascript
+innerUtil.createThumbnailC();
+
+参数：无
+
+返回值：
+{Element}: 生成的canvas元素
+```
+
+### innerUtil.setECGBackground()方法
 
 该方法将doc.ecgDom.bc中绘制的内容导出为base64格式, 然后设置为ECG最外层容器的背景。
 
@@ -72,7 +85,18 @@ innerUtil.setECGBackground();
 设置成功则返回true；
 ```
 
-<h3>6、innerUtil.getBaseY()方法</h3>
+### innerUtil.setThumbnailBc()方法
+
+该方法将doc.ecgDom.tc中绘制的内容导出为base64格式, 然后设置为缩略图最外层容器的背景。
+
+```javascript
+innerUtil.setThumbnailBc();
+
+返回值：
+设置成功则返回true；
+```
+
+### innerUtil.getBaseY()方法
 
 该方法用于获取每条心电图线的起始纵坐标。该起始纵坐标表示在该心电图在整个canvas中y轴的起始位置，用该坐标值减去每次心电的震动幅度即得每次心电震动在canvas中y轴的取值（canvas坐标y轴向下为正）。
 
@@ -86,7 +110,7 @@ innerUtil.getBaseY(name);
 baseY：number类型
 ```
 
-<h3>7、innerUtil.drawECG()方法</h3>
+### innerUtil.drawECG()方法
 
 ```javascript
 innerUtil.drawECG(name, v);
@@ -98,7 +122,7 @@ v：本次绘制终点心电的电压
 返回值：无
 ```
 
-<h3>8、innerUtil.isArray()方法</h3>
+### innerUtil.isArray()方法
 
 ```javascript
 innerUtil.isArray(obj);
@@ -109,7 +133,7 @@ obj：要检测的对象
 返回值：如果被检测对象为数组返回true，否则返回false
 ```
 
-<h3>9、innerUtil.isString()方法</h3>
+### innerUtil.isString()方法
 
 ```javascript
 innerUtil.isString(obj);
@@ -127,7 +151,8 @@ obj：要检测的对象
 ```javascript
 innerUtil.resetAllCoordinate();
 
-参数： 无
+参数： 
+ifY: 是否重置y坐标
 
 返回值：
 {boolean} 初始成功返回true，否则返回false。
@@ -148,7 +173,7 @@ ifY：是否需要重置y坐标
 {boolean}: 初始化成功返回true，否则返回false
 ```
 
-<h3>11、innerUtil.isNumber()方法</h3>
+### innerUtil.isNumber()方法
 
 该方法用于检测入参是否为Number类型。
 
@@ -162,7 +187,7 @@ obj：要检测的对象
 {boolean}： 如果入参为Number类型则返回true，否则返回false
 ```
 
-### 12、innerUtil.isObject()方法
+### innerUtil.isObject()方法
 
 该方法用于检测入参是否为Objec类型。
 
@@ -281,4 +306,17 @@ right：滚动方向是否向右，如果向左可以省略
 
 返回值：
 number｜Boolean：设置滚动距离成功或者不设置返回number，如果val设置错误会返回false
+```
+
+### innerUtil.drawThumbnailBg()方法
+
+该方法用于绘制缩略图的边框和格子以及点，相当于缩略图的背景。
+
+```javascript
+innerUtil.drawThumbnailBg();
+
+参数：无
+
+返回值：
+{boolean}: 设置成功返回true，绘制失败返回false
 ```

@@ -17,13 +17,18 @@ var ECG = (function () {
                 // 背景 | 后面的canvas
                 bc   : null,
                 // 心电 | 前面的canvas
-                fc   : []
+                fc   : [],
+                // 缩略图容器
+                t    : null,
+                // 缩略图canvas
+                tc   : null
             },
 
             // 存放ECG中所有的context
             context : {
                 bcContext : null,
-                fcContext : null
+                fcContext : null,
+                tcContext : null
             },
 
             width        : 1000,    // ECG容器的宽度
@@ -56,7 +61,7 @@ var ECG = (function () {
                         index  : 9,
                         text   : 'Pacer'
                     }
-                },
+                }
             },
             // 主要存放doc.ecgDom.bc的配置信息,后面会将前面的配置逐步放到bc中
             bc               : {},
@@ -97,12 +102,25 @@ var ECG = (function () {
                 fcNum      : 6,
                 drawIndex  : 0
             },
+            // 主要存放doc.ecgDom.tc的配置信息
+            tc               : {
+                // 缩略图只绘制一条心电,所以只需要保存一个坐标
+                coordinate : {
+                    x : 0,
+                    y : 0
+                },
+                // 心电要换行,表示当前心电绘制第几行,主要用于计算基线位置
+                line       : 1,
+                // 每个数据用多少像素表示(x轴)
+                pxPerData  : 1,
+                // 每毫伏用多少像素表示(y轴)
+                pxPerMv    : 15
+            },
 
             rowsPerLine   : 5,        // 每条心电图占用几行
             colsPerSecond : 5,   // 每秒占用几列
             isInit        : false,   // ECG对象是否初始化
             ifPoint       : true,      // ECG.ecgDom.bc是否要画点
-            bcDataUrl     : null,     // ECG.ecgDom.bc绘制内容的导出的base64格式的图片
 
             rate : 125,      // 采样频率
 
@@ -179,16 +197,30 @@ var ECG = (function () {
         };
 
         /**
+         * 存放缩略图的样式
+         *
+         * @type {{t: {}, tc: {}}}
+         */
+        var tCss = {
+            t  : {
+                width  : '100%',
+                height : '254px'
+            },
+            tc : {}
+        };
+
+        /**
          * 只在函数内部使用的,不对外公开的innerUtil部分
          * @type {{}}
          */
         var innerUtil = {
             /**
              * 检测ECG容器是否声明
+             *
              * @param id
              * @returns {boolean}
              */
-            checkECG : function (id) {
+            checkECGContainer : function (id) {
                 var c = document.getElementById(id);
                 if (c) {
                     doc.ecgDom.c = c;
@@ -200,42 +232,27 @@ var ECG = (function () {
             },
 
             /**
-             * 设置ECG容器参数,如果没有则使用默认值
+             * 检测缩略图容器是否声明
              *
-             * @param obj {width: number, height: number},宽度和高度为数字
+             * @param id
+             * @returns {boolean}
              */
-            initECGProperty : function (obj) {
-                if (typeof obj === 'object') {
-                    // 设置ECG容器的宽度
-                    if ('width' in obj) {
-                        doc.ecgDom.c.style.width = '100%';
-                        doc.width = obj.width;
-                    }
-                    // 设置doc.ecgDom.bc的左边距
-                    if ('marginL' in obj) {
-                        doc.marginL = obj.marginL;
-                    }
-                    // 设置ECG容器的高度
-                    if ('height' in obj) {
-                        doc.ecgDom.height = obj.height;
-                        doc.height = obj.height;
-                    } else {
-                        doc.ecgDom.height = doc.ecgDom.width / 2;
-                    }
-
-                    // 设置doc.tWidth
-                    {
-                        doc.tWidth = doc.width + doc.marginL;
-                    }
+            checkThumbnailContainer : function (id) {
+                var t = document.getElementById(id);
+                if (t) {
+                    doc.ecgDom.t = t;
+                    return true;
                 } else {
-                    console.error('initECGProperty参数错误');
+                    console.error('未找到缩略图容器');
+                    return false;
                 }
             },
 
             /**
-             * 初始化canvas,js生成canvas dom元素,设置canvas的属性并返回
+             * 生成心电详图中的canvas并返回
              *
-             * @param isBc 是否是心电背景
+             * @param isBc
+             * @returns {Element}
              */
             createCanvas : function (isBc) {
                 var canvas = document.createElement('canvas');
@@ -262,14 +279,50 @@ var ECG = (function () {
             },
 
             /**
+             * 生成缩略图中使用的canvas元素并返回
+             *
+             * @returns {*}
+             */
+            createThumbnailC : function () {
+                if (!doc.ecgDom.t) {
+                    console.error('can not find thumbnail container');
+                    return false;
+                }
+                var c = document.createElement('canvas');
+                var t = doc.ecgDom.t;
+                c.width = t.clientWidth;
+                c.height = parseInt(tCss.t.height);
+
+                c.id = 'tc';
+
+                doc.ecgDom.tc = c;
+
+                return c;
+            },
+
+            /**
              * 将doc.ecgDom.bc中绘制的内容导出为base64格式,
              * 然后设置为ECG最外层容器的背景
              *
              * @returns {boolean}
              */
             setECGBackground : function () {
-                doc.bcDataUrl = doc.ecgDom.bc.toDataURL();
-                doc.ecgDom.c.style.backgroundImage = 'url(' + doc.bcDataUrl + ')';
+                var bcDataUrl = doc.ecgDom.bc.toDataURL();
+                doc.ecgDom.c.style.backgroundImage = 'url(' + bcDataUrl + ')';
+
+                return true;
+            },
+
+            /**
+             * 将doc.ecgDom.tc中绘制的
+             *
+             * @returns {boolean}
+             */
+            setThumbnailBg : function () {
+                var bcDataUrl = doc.ecgDom.tc.toDataURL();
+                doc.ecgDom.t.style.backgroundImage = 'url(' + bcDataUrl + ')';
+
+                chart.clearTc();
 
                 return true;
             },
@@ -401,7 +454,7 @@ var ECG = (function () {
             /**
              * 获取所有选中的要显示的心电的名字
              *
-             * @param checkboxNam
+             * @param checkboxName
              * @returns {Array}e
              */
             getAllSelectedEcg : function (checkboxName) {
@@ -751,6 +804,60 @@ var ECG = (function () {
                 }
 
                 this.resetAllCoordinate(true);
+            },
+
+            /**
+             * 绘制缩略图的边框和背景
+             *
+             * @returns {boolean}
+             */
+            drawThumbnailBg : function () {
+
+                var theme = doc.theme;
+                var context = doc.context.tcContext;
+                var tc = doc.ecgDom.tc;
+                var w = tc.width;
+                var h = tc.height;
+                //绘制边框
+                {
+                    context.lineWidth = 2;
+                    context.strokeStyle = theme.grid;
+                    context.rect(1, 1, w - 2, h - 2);
+                    context.stroke();
+                }
+                // 绘制格子
+                {
+                    context.lineWidth = 1;
+                    context.strokeStyle = theme.grid;
+                    // 绘制行
+                    for (var i = 1.5 + doc.cellHeight; i < h; i += doc.cellHeight) {
+                        context.moveTo(0, i);
+                        context.lineTo(w, i);
+                    }
+                    for (var j = 1.5 + doc.cellWidth; j < w; j += doc.cellWidth) {
+                        context.moveTo(j, 0);
+                        context.lineTo(j, h);
+                    }
+                    context.stroke();
+                }
+                // 绘制点
+                {
+                    context.beginPath();
+                    var ws = doc.cellWidth / 5;
+                    var hs = doc.cellHeight / 5;
+                    context.fillStyle = theme.grid;
+                    for (var i = 1 + ws; i < w; i += ws) {
+                        for (var j = 1 + hs; j < h; j += hs) {
+                            context.rect(i, j, theme.dotWidth, theme.dotWidth);
+                        }
+                    }
+                    context.fill();
+                }
+
+                // 将绘制的格子设置为容器的背景
+                this.setThumbnailBg();
+
+                return true;
             }
         };
 
@@ -1052,16 +1159,11 @@ var ECG = (function () {
                 if ('id' in obj) {
                     // 验证是否能找到ECG容器
                     {
-                        var ECG = innerUtil.checkECG(obj.id);
+                        var ECG = innerUtil.checkECGContainer(obj.id);
                         if (!ECG) {
                             console.error('ECG can not find by id');
                             return;
                         }
-                    }
-
-                    // 配置容器的参数,高度默认为宽度的一半
-                    {
-                        innerUtil.initECGProperty(obj);
                     }
 
                     // 生成canvas的内层容器并添加到最外层容器中
@@ -1100,6 +1202,50 @@ var ECG = (function () {
                 } else {
                     console.error('配置信息错误,找不到ECG容器。');
                     return false;
+                }
+            },
+
+            initThumbnail : function (obj) {
+                // 检测入参类型是否为对象
+                if (typeof obj != 'object') {
+                    console.error('配置信息错误,请以对象的形式传入参数');
+                    return false;
+                }
+                // 在id存在的情况下进行下一步
+                if ('id' in obj) {
+                    if (!innerUtil.checkThumbnailContainer(obj.id)) {
+                        return false;
+                    }
+
+                    // 生成缩略图使用的canvas并添加到缩略图容器中
+                    {
+                        var c = innerUtil.createThumbnailC();
+                        if (!c) {
+                            console.log('generate thumbnail canvas error, stream is interrupted.');
+                            return false;
+                        }
+                        doc.ecgDom.t.appendChild(c);
+                    }
+
+                    // 设置缩略图的样式
+                    {
+                        var ecgDom = doc.ecgDom;
+                        for (var i in tCss) {
+                            for (var j in tCss[ i ]) {
+                                ecgDom[ i ].style[ j ] = tCss[ i ][ j ];
+                            }
+                        }
+                    }
+
+                    // 设置tcContext
+                    {
+                        doc.context.tcContext = doc.ecgDom.tc.getContext('2d');
+                    }
+
+                    // 绘制缩略图的边框和格子
+                    {
+                        innerUtil.drawThumbnailBg();
+                    }
                 }
             },
 
@@ -1182,6 +1328,20 @@ var ECG = (function () {
                 doc.fc.drawIndex = 0;
                 //
                 doc.context.fcContext = doc.ecgDom.fc[ 0 ].getContext('2d');
+
+                return true;
+            },
+
+            /**
+             * 清除缩略图canvas的内容
+             *
+             * @returns {boolean}
+             */
+            clearTc : function () {
+                var context = doc.context.tcContext;
+                var w = doc.ecgDom.tc.width;
+                var h = doc.ecgDom.tc.height;
+                context.clearRect(0, 0, w, h);
 
                 return true;
             },
@@ -1361,6 +1521,7 @@ var ECG = (function () {
                             var data = ecgPartBlocksData[ index ];
                             var dataLen = data.length;
 
+                            // 绘制心电时间
                             if (0 == i) {
                                 var time = ecgPartBlocksHead[ 'headTime' ] + ' 心率: ' + ecgPartBlocksHead[ 'hrVal' ];
                                 innerUtil.drawTime(time, allDrawECG[ 0 ]);
@@ -1380,13 +1541,104 @@ var ECG = (function () {
                 return true;
             },
 
+            /**
+             * 绘制缩略图
+             *
+             * @param name
+             */
+            drawTc : function (name) {
+                name = name ? name : 'V1';
+                // 清除原来的内容
+                {
+                    this.clearTc();
+                }
+                // 每次绘制缩略图初始化坐标等数据
+                {
+                    var tc = doc.tc;
+                    tc.coordinate.x = 0;
+                    tc.coordinate.y = 0;
+                    tc.line = 1;
+                }
+                // 计算
+                {
+                    // 缩略的总宽度
+                    var tWidth = 72 * doc.rate * doc.tc.pxPerData;
+                    // canvas宽度
+                    var cWidth = doc.ecgDom.tc.width;
+                    // canvas高度
+                    var cHeight = doc.ecgDom.tc.height;
+                    // 需要多少行绘制所有的缩略, 加1是为了解决最后一行显示不全的问题
+                    var lines = Math.ceil(tWidth / cWidth) + 1;
+                    // 每行心电的间隔
+                    var space = Math.floor(cHeight / lines);
+                    // tc心电坐标
+                    var co = doc.tc.coordinate;
+                }
+                // 设置context属性
+                {
+                    var c = doc.context.tcContext;
+                    c.beginPath();
+                    c.lineWidth = doc.theme.lineWidth;
+                    c.strokeStyle = doc.theme.line;
+                }
+                // 获取指定心电的数据并绘制心电缩略图
+                {
+                    var ecgData = doc.ecgData;
+                    var ecgPartBlocks = ecgData.ecgPartBlocks;
+                    var avgLead = ecgData.avgLead;
+                    var index = innerUtil.getEcgIndex(name);
 
+                    for (var i = 0; i < 18; i++) {
+                        var subBlocks = ecgPartBlocks[ i ];
+                        var ecgPartBlocksData = subBlocks[ 'ecgPartBlockData' ];
+                        var data = ecgPartBlocksData[ index ];
+                        for (var j = 0; j < data.length; j++) {
+                            var v = data[ j ];
+
+                            // 处理x坐标
+                            {
+                                var x = co.x + tc.pxPerData;
+                                if (x > cWidth) {
+                                    tc.line++;
+                                    x -= cWidth;
+                                    co.x = 0;
+                                    co.y += tc.line * space;
+                                }
+                            }
+                            // 处理心电电压
+                            {
+                                if (avgLead) {
+                                    v -= avgLead[ index ];
+                                }
+                                v *= tc.pxPerMv;
+                                v = tc.line * space - v;
+                            }
+                            if (0 == co.x) {
+                                co.y = v;
+                            }
+                            // 绘制缩略图
+                            {
+                                c.moveTo(co.x, co.y + 0.5);
+                                c.lineTo(x, v + 0.5);
+                            }
+                            // 保存最后一次心电坐标
+                            {
+                                co.x = x;
+                                co.y = v;
+                            }
+                        }
+                    }
+
+                    c.stroke();
+                }
+            },
         };
 
         // 返回
         return {
             doc   : doc,
             css   : css,
+            tCss  : tCss,
             chart : chart,
             util  : outUtil,
             inner : innerUtil
