@@ -1589,6 +1589,10 @@ var ECG = (function () {
                     var index = innerUtil.getEcgIndex(name);
 
                     for (var i = 0; i < 18; i++) {
+                        if (!innerUtil.isArray(ecgPartBlocks) || ecgPartBlocks.length ==0) {
+                            console.error('ecgPartBlocks is not an Array or the array is empty.');
+                            return false;
+                        }
                         var subBlocks = ecgPartBlocks[ i ];
                         var ecgPartBlocksData = subBlocks[ 'ecgPartBlockData' ];
                         var data = ecgPartBlocksData[ index ];
