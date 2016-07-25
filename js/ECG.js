@@ -1205,6 +1205,12 @@ var ECG = (function () {
                 }
             },
 
+            /**
+             * 初始化缩略图配置
+             *
+             * @param obj
+             * @returns {boolean}
+             */
             initThumbnail : function (obj) {
                 // 检测入参类型是否为对象
                 if (typeof obj != 'object') {
@@ -1216,7 +1222,7 @@ var ECG = (function () {
                     if (!innerUtil.checkThumbnailContainer(obj.id)) {
                         return false;
                     }
-
+debugger
                     // 生成缩略图使用的canvas并添加到缩略图容器中
                     {
                         var c = innerUtil.createThumbnailC();
