@@ -3,7 +3,7 @@
  * CreateTime:  16/5/26 11:10
  * Description: ECG.js主文件,主要将可以投入生产环境使用的相关方法插入该文件
  */
-var ECG = (function () {
+var ECG = (function() {
         /**
          * 存储所有跟canvas相关的参数
          */
@@ -100,10 +100,15 @@ var ECG = (function () {
                 fcWidth    : 3000,
                 // 一共需要多少个fc
                 fcNum      : 6,
-                drawIndex  : 0
+                drawIndex  : 0,
+                // 每条数据的x轴跨度,
+                // 计算方式:doc.cellWidth * doc.colsPerSecond * psMultiple / doc.rate;
+                pxPerData  : 2
             },
             // 主要存放doc.ecgDom.tc的配置信息
             tc               : {
+                // 当前绘制缩略图的心电的名字
+                name       : 'V1',
                 // 缩略图只绘制一条心电,所以只需要保存一个坐标
                 coordinate : {
                     x : 0,
@@ -114,7 +119,13 @@ var ECG = (function () {
                 // 每个数据用多少像素表示(x轴)
                 pxPerData  : 1,
                 // 每毫伏用多少像素表示(y轴)
-                pxPerMv    : 15
+                pxPerMv    : 15,
+                // 表示每两条缩略图之间的间隔
+                space      : 25,
+                // 选择框的宽度
+                sWidth     : 200,
+                // 选择框的高度
+                sHeight    : 20
             },
 
             rowsPerLine   : 5,        // 每条心电图占用几行
@@ -134,12 +145,13 @@ var ECG = (function () {
 
             // 存放当前心电主题样式
             theme : {
-                background : '#fff',
-                font       : '#000',
-                grid       : '#ff859d',    // 边框及点的颜色
-                line       : '#000',        // 心电图线段的颜色
-                lineWidth  : 1,       // 边框的宽度
-                dotWidth   : 1         // 点的宽度
+                background  : '#fff',
+                font        : '#000',
+                grid        : '#ff859d',    // 边框及点的颜色
+                line        : '#000',        // 心电图线段的颜色
+                lineWidth   : 1,       // 边框的宽度
+                dotWidth    : 1,         // 点的宽度
+                optionColor : '#2ac8c7'
             },
 
             // 存放所有的配置信息
@@ -220,9 +232,9 @@ var ECG = (function () {
              * @param id
              * @returns {boolean}
              */
-            checkECGContainer : function (id) {
+            checkECGContainer : function(id) {
                 var c = document.getElementById(id);
-                if (c) {
+                if(c) {
                     doc.ecgDom.c = c;
                     return true;
                 } else {
@@ -237,9 +249,9 @@ var ECG = (function () {
              * @param id
              * @returns {boolean}
              */
-            checkThumbnailContainer : function (id) {
+            checkThumbnailContainer : function(id) {
                 var t = document.getElementById(id);
-                if (t) {
+                if(t) {
                     doc.ecgDom.t = t;
                     return true;
                 } else {
@@ -254,7 +266,7 @@ var ECG = (function () {
              * @param isBc
              * @returns {Element}
              */
-            createCanvas : function (isBc) {
+            createCanvas : function(isBc) {
                 var canvas = document.createElement('canvas');
 
                 canvas.height = doc.height;
@@ -266,7 +278,7 @@ var ECG = (function () {
                  *
                  * 2016-06-27 背景canvas的宽度设置为doc.width的2倍
                  */
-                if (isBc) {
+                if(isBc) {
                     canvas.width = doc.width * 2;
                     canvas.id = 'bc';
                 } else {
@@ -283,8 +295,8 @@ var ECG = (function () {
              *
              * @returns {*}
              */
-            createThumbnailC : function () {
-                if (!doc.ecgDom.t) {
+            createThumbnailC : function() {
+                if(!doc.ecgDom.t) {
                     console.error('can not find thumbnail container');
                     return false;
                 }
@@ -306,7 +318,7 @@ var ECG = (function () {
              *
              * @returns {boolean}
              */
-            setECGBackground : function () {
+            setECGBackground : function() {
                 var bcDataUrl = doc.ecgDom.bc.toDataURL();
                 doc.ecgDom.c.style.backgroundImage = 'url(' + bcDataUrl + ')';
 
@@ -318,7 +330,7 @@ var ECG = (function () {
              *
              * @returns {boolean}
              */
-            setThumbnailBg : function () {
+            setThumbnailBg : function() {
                 var bcDataUrl = doc.ecgDom.tc.toDataURL();
                 doc.ecgDom.t.style.backgroundImage = 'url(' + bcDataUrl + ')';
 
@@ -333,8 +345,8 @@ var ECG = (function () {
              * @param name 要获取的心电的名字
              * @returns {number}
              */
-            getBaseY : function (name) {
-                var index = doc.descriptionWords.style[ name ].index;
+            getBaseY : function(name) {
+                var index = doc.descriptionWords.style[name].index;
 
                 return doc.cellHeight * index;
             },
@@ -345,12 +357,11 @@ var ECG = (function () {
              * @param name 要绘制的心电的名字,具体参见doc.fc.coordinate中的对象
              * @param v 当前要绘制线段终点的心电电压
              */
-            drawECG : function (name, v) {
-                var coordinate = doc.fc.coordinate[ name ];
+            drawECG : function(name, v) {
+                var coordinate = doc.fc.coordinate[name];
                 var gainMultiple = doc.fc.gain.mul;
-                var psMultiple = doc.fc.ps.mul;
-                // 根据每秒占用的宽度和采样率计算出每条线段的x轴宽度
-                var space = doc.cellWidth * doc.colsPerSecond * psMultiple / doc.rate;
+                // 每条线段的x轴宽度
+                var space = doc.fc.pxPerData;
 
                 // 计算终点的坐标,同时根据终点坐标来计算当前的fcContext
                 {
@@ -365,16 +376,16 @@ var ECG = (function () {
 
                     // 当前画布画到边缘时, 跳到下一个画布继续画
                     // 此时x轴坐标大于fcWidth,所以后面要重新处理destinationX
-                    if (destinationX > doc.fc.fcWidth) {
+                    if(destinationX > doc.fc.fcWidth) {
                         this.resetCoordinateByName(name);
                         doc.fc.drawIndex++;
-                        if (doc.fc.drawIndex < doc.ecgDom.fc.length) {
+                        if(doc.fc.drawIndex < doc.ecgDom.fc.length) {
                             doc.context.fcContext =
-                                doc.ecgDom.fc[ doc.fc.drawIndex ].getContext('2d');
+                                doc.ecgDom.fc[doc.fc.drawIndex].getContext('2d');
                         } else {
                             doc.fc.drawIndex = 0;
                             doc.context.fcContext =
-                                doc.ecgDom.fc[ doc.fc.drawIndex ].getContext('2d');
+                                doc.ecgDom.fc[doc.fc.drawIndex].getContext('2d');
                         }
                         destinationX = 0;
                     }
@@ -403,8 +414,8 @@ var ECG = (function () {
              * @param obj 要检测的对象
              * @returns {boolean} 如果为数组则返回true，否则返回false
              */
-            isArray : function (obj) {
-                if (obj && Object.prototype.toString.call(obj) == '[object Array]') {
+            isArray : function(obj) {
+                if(obj && Object.prototype.toString.call(obj) == '[object Array]') {
                     return true;
                 }
 
@@ -416,8 +427,8 @@ var ECG = (function () {
              * @param obj
              * @returns {boolean}
              */
-            isString : function (obj) {
-                if (obj && Object.prototype.toString.call(obj) == '[object String]') {
+            isString : function(obj) {
+                if(obj && Object.prototype.toString.call(obj) == '[object String]') {
                     return true;
                 }
 
@@ -429,8 +440,8 @@ var ECG = (function () {
              * @param obj
              * @returns {boolean}
              */
-            isNumber : function (obj) {
-                if (obj && Object.prototype.toString.call(obj) == '[object Number]') {
+            isNumber : function(obj) {
+                if(obj && Object.prototype.toString.call(obj) == '[object Number]') {
                     return true;
                 }
 
@@ -443,8 +454,8 @@ var ECG = (function () {
              * @param obj
              * @returns {boolean}
              */
-            isObject : function (obj) {
-                if (obj && Object.prototype.toString.call(obj) == '[object Object]') {
+            isObject : function(obj) {
+                if(obj && Object.prototype.toString.call(obj) == '[object Object]') {
                     return true;
                 }
 
@@ -457,13 +468,13 @@ var ECG = (function () {
              * @param checkboxName
              * @returns {Array}e
              */
-            getAllSelectedEcg : function (checkboxName) {
+            getAllSelectedEcg : function(checkboxName) {
                 var queryStr = 'input[name="' + checkboxName + '"]:checked';
                 var chkArr = document.querySelectorAll(queryStr);
                 var len = chkArr.length;
                 var chkNames = [];
-                for (var i = 0; i < len; i++) {
-                    var name = chkArr[ i ].value;
+                for(var i = 0; i < len; i++) {
+                    var name = chkArr[i].value;
                     chkNames.push(name);
                 }
 
@@ -477,17 +488,17 @@ var ECG = (function () {
              * @param ifY
              * @returns {boolean}
              */
-            resetAllCoordinate : function (ifY) {
+            resetAllCoordinate : function(ifY) {
                 var coor = doc.fc.coordinate;
                 var keys = Object.keys(coor);
                 var len = keys.length;
 
-                for (var i = 0; i < len; i++) {
-                    var subKey = keys[ i ];
-                    coor[ subKey ][ 'x' ] = 0;
-                    if (ifY) {
-                        coor[ subKey ][ 'y' ] =
-                            doc.descriptionWords.style[ subKey ][ 'index' ] * doc.cellHeight;
+                for(var i = 0; i < len; i++) {
+                    var subKey = keys[i];
+                    coor[subKey]['x'] = 0;
+                    if(ifY) {
+                        coor[subKey]['y'] =
+                            doc.descriptionWords.style[subKey]['index'] * doc.cellHeight;
                     }
                 }
 
@@ -502,12 +513,12 @@ var ECG = (function () {
              * @param ifY
              * @returns {boolean}
              */
-            resetCoordinateByName : function (name, ifY) {
+            resetCoordinateByName : function(name, ifY) {
                 var coor = doc.fc.coordinate;
-                if (ifY) {
-                    coor[ name ][ 'y' ] = 0;
+                if(ifY) {
+                    coor[name]['y'] = 0;
                 }
-                coor[ name ][ 'x' ] = 0;
+                coor[name]['x'] = 0;
 
                 return true;
             },
@@ -517,8 +528,8 @@ var ECG = (function () {
              * @param name
              * @returns {*}
              */
-            getEcgIndex : function (name) {
-                if (!name || !this.isString(name)) {
+            getEcgIndex : function(name) {
+                if(!name || !this.isString(name)) {
                     console.error('error: parameter is wrong.');
 
                     return false;
@@ -532,14 +543,14 @@ var ECG = (function () {
              *
              * @returns {Array}
              */
-            getAllDrawECG : function () {
+            getAllDrawECG : function() {
                 var all = doc.descriptionWords.style;
                 var keys = Object.keys(all);
                 var subAll = [];
                 var len = keys.length;
-                for (var i = 0; i < len; i++) {
-                    var key = keys[ i ];
-                    if (all[ key ][ 'ifDraw' ]) {
+                for(var i = 0; i < len; i++) {
+                    var key = keys[i];
+                    if(all[key]['ifDraw']) {
                         subAll.push(key);
                     }
                 }
@@ -549,10 +560,10 @@ var ECG = (function () {
             /**
              * 绘制背景中的列
              */
-            drawCols : function () {
+            drawCols : function() {
                 var cellWidth = doc.cellWidth;    // 单元格的宽度
                 var context = doc.context.bcContext;
-                if (!cellWidth) {
+                if(!cellWidth) {
                     cellWidth = 50;
                 }
                 context.strokeStyle = doc.theme.grid;
@@ -565,8 +576,8 @@ var ECG = (function () {
                     tWidth = doc.width * 2,
                     num    = 1;
 
-                for (i; i < tWidth; i += cellWidth) {
-                    if (num % doc.colsPerSecond == 0) {
+                for(i; i < tWidth; i += cellWidth) {
+                    if(num % doc.colsPerSecond == 0) {
                         context.beginPath();
                         context.lineWidth = 2;
                         context.moveTo(i, 0);
@@ -585,22 +596,22 @@ var ECG = (function () {
             /**
              * 绘制背景中的行
              */
-            drawRows : function () {
+            drawRows : function() {
                 var cellHeight = doc.cellHeight;   // 单元格的高度
                 var context = doc.context.bcContext;
 
-                if (!cellHeight) {
+                if(!cellHeight) {
                     cellHeight = cellWidth;
                 }
                 context.beginPath();
                 context.strokeStyle = doc.theme.grid;
                 var num = 1;
-                for (var j = cellHeight; j < doc.height; j += cellHeight) {
+                for(var j = cellHeight; j < doc.height; j += cellHeight) {
                     /**
                      * 这里行的起始位置的横坐标为doc.marginL,
                      * 因为canvas的border是从距离左边doc.marginL的地方开始画的
                      */
-                    if (num % doc.rowsPerLine == 0) {
+                    if(num % doc.rowsPerLine == 0) {
                         context.beginPath();
                         context.lineWidth = 2;
                         context.moveTo(doc.marginL, j);
@@ -619,22 +630,22 @@ var ECG = (function () {
             /**
              * 绘制背景中的点
              */
-            drawPoints : function () {
+            drawPoints : function() {
                 var ifPoint = doc.ifPoint;
 
-                if (ifPoint) {
+                if(ifPoint) {
                     var dotMargin = Math.floor(doc.cellWidth / 5);
                     var context = doc.context.bcContext;
                     context.fillStyle = doc.theme.grid;
 
                     var i = dotMargin + doc.marginL;
-                    for (i; i < doc.width * 2; i += dotMargin) {
-                        if (((i - doc.marginL
-                             ) % doc.cellWidth
-                            ) != 0) {    // 列分隔线处不打点
-                            for (var j = dotMargin; j < doc.height; j += dotMargin) {
-                                if ((j % doc.cellHeight
-                                    ) != 0) {    // 行分割线处不打点
+                    for(i; i < doc.width * 2; i += dotMargin) {
+                        if(((i - doc.marginL
+                            ) % doc.cellWidth
+                           ) != 0) {    // 列分隔线处不打点
+                            for(var j = dotMargin; j < doc.height; j += dotMargin) {
+                                if((j % doc.cellHeight
+                                   ) != 0) {    // 行分割线处不打点
                                     context.rect(i, j, doc.theme.dotWidth, doc.theme.dotWidth);
                                 }
                             }
@@ -653,9 +664,9 @@ var ECG = (function () {
              * @param name
              * @returns {boolean}
              */
-            drawTime : function (time, name) {
+            drawTime : function(time, name) {
                 var context = doc.context.fcContext;
-                var coordinate = doc.fc.coordinate[ name ];
+                var coordinate = doc.fc.coordinate[name];
                 var contextX = coordinate.x;
 
                 context.save();
@@ -673,8 +684,8 @@ var ECG = (function () {
              * @param width
              * @returns {boolean}
              */
-            setCInWidth : function (width) {
-                if (!this.isNumber(width)) {
+            setCInWidth : function(width) {
+                if(!this.isNumber(width)) {
                     console.error('error: number is required, but ' + typeof width + ' is given.');
 
                     return false;
@@ -690,25 +701,25 @@ var ECG = (function () {
              * 填充c_in容器
              * 该方法会先清空c_in容器,然后根据需要填充bc和fc到c_in容器中
              */
-            fillCIn : function () {
+            fillCIn : function() {
                 var c_in = doc.ecgDom.c_in;
                 var bc = doc.ecgDom.bc;
                 var fc = doc.ecgDom.fc;
 
                 // 清除c_in中原有的dom元素并生成新的dom元素
-                if (bc) {
+                if(bc) {
                     try {
                         c_in.removeChild(bc);
-                    } catch (e) {
+                    } catch(e) {
                         console.error(e);
                     } finally {
                         doc.ecgDom.bc = null;
                     }
                 }
-                for (var j = 0; j < fc.length; j++) {
+                for(var j = 0; j < fc.length; j++) {
                     try {
-                        c_in.removeChild(fc[ j ]);
-                    } catch (e) {
+                        c_in.removeChild(fc[j]);
+                    } catch(e) {
                         console.error(e);
                     }
                 }
@@ -720,7 +731,7 @@ var ECG = (function () {
                 doc.ecgDom.c_in.appendChild(doc.ecgDom.bc);
 
                 // 生成需要的fc canvas
-                for (var i = 0; i < doc.fc.fcNum; i++) {
+                for(var i = 0; i < doc.fc.fcNum; i++) {
                     var c = innerUtil.createCanvas(false);
                     c.id = 'fc' + i;
                     doc.ecgDom.fc.push(c);
@@ -735,18 +746,18 @@ var ECG = (function () {
              * @param right
              * @returns {*}
              */
-            initScrollVal : function (val, right) {
+            initScrollVal : function(val, right) {
                 var c = doc.ecgDom.c;
                 var space = 0;
-                if (!val) { // 如果没有val入参则滚动doc.ecgDom.c的宽度的距离
-                    if (right) {
+                if(!val) { // 如果没有val入参则滚动doc.ecgDom.c的宽度的距离
+                    if(right) {
                         space = c.scrollLeft - c.offsetWidth;
                     } else {
                         space = c.scrollLeft + c.offsetWidth;
                     }
                 } else {
-                    if (typeof val == 'number') {
-                        if (right) {
+                    if(typeof val == 'number') {
+                        if(right) {
                             space = c.scrollLeft - val;
                         } else {
                             space = c.scrollLeft + val;
@@ -764,9 +775,9 @@ var ECG = (function () {
             /**
              * 根据要绘制的心电的条数动态的定位心电的位置
              */
-            repositionECG : function () {
+            repositionECG : function() {
                 // 上下两个功能不需要动态定位心电的位置, 这里预判断一下
-                if (!doc.ifReposition) {
+                if(!doc.ifReposition) {
                     return false;
                 }
                 var height     = doc.height,
@@ -777,28 +788,28 @@ var ECG = (function () {
                     rows       = height / cellHeight,
                     middleRow  = Math.floor(rows / 2);
 
-                if (1 == num % 2) {
+                if(1 == num % 2) {
                     var middleNum = Math.floor(num / 2);
                     var jump = (middleRow / (middleNum + 1
                         )
                     ).toFixed(1);
 
-                    for (var i = 0; i < num; i++) {
-                        if (i < middleNum) {
-                            style[ allDrawECG[ i ] ][ 'index' ] = (i + 1
-                                                                  ) * jump;
-                        } else if (i == middleNum) {
-                            style[ allDrawECG[ i ] ][ 'index' ] = middleRow;
+                    for(var i = 0; i < num; i++) {
+                        if(i < middleNum) {
+                            style[allDrawECG[i]]['index'] = (i + 1
+                                                            ) * jump;
+                        } else if(i == middleNum) {
+                            style[allDrawECG[i]]['index'] = middleRow;
                         } else {
-                            style[ allDrawECG[ i ] ][ 'index' ] = middleRow + (i - middleNum
-                                                                              ) * jump;
+                            style[allDrawECG[i]]['index'] = middleRow + (i - middleNum
+                                                                        ) * jump;
                         }
                     }
                 } else {
                     var jump = Math.floor((rows - 1
                                           ) / num);
-                    for (var i = 0; i < num; i++) {
-                        style[ allDrawECG[ i ] ][ 'index' ] = jump * (i + 1
+                    for(var i = 0; i < num; i++) {
+                        style[allDrawECG[i]]['index'] = jump * (i + 1
                             );
                     }
                 }
@@ -811,7 +822,7 @@ var ECG = (function () {
              *
              * @returns {boolean}
              */
-            drawThumbnailBg : function () {
+            drawThumbnailBg : function() {
 
                 var theme = doc.theme;
                 var context = doc.context.tcContext;
@@ -830,11 +841,11 @@ var ECG = (function () {
                     context.lineWidth = 1;
                     context.strokeStyle = theme.grid;
                     // 绘制行
-                    for (var i = 1.5 + doc.cellHeight; i < h; i += doc.cellHeight) {
+                    for(var i = 1.5 + doc.cellHeight; i < h; i += doc.cellHeight) {
                         context.moveTo(0, i);
                         context.lineTo(w, i);
                     }
-                    for (var j = 1.5 + doc.cellWidth; j < w; j += doc.cellWidth) {
+                    for(var j = 1.5 + doc.cellWidth; j < w; j += doc.cellWidth) {
                         context.moveTo(j, 0);
                         context.lineTo(j, h);
                     }
@@ -846,8 +857,8 @@ var ECG = (function () {
                     var ws = doc.cellWidth / 5;
                     var hs = doc.cellHeight / 5;
                     context.fillStyle = theme.grid;
-                    for (var i = 1 + ws; i < w; i += ws) {
-                        for (var j = 1 + hs; j < h; j += hs) {
+                    for(var i = 1 + ws; i < w; i += ws) {
+                        for(var j = 1 + hs; j < h; j += hs) {
                             context.rect(i, j, theme.dotWidth, theme.dotWidth);
                         }
                     }
@@ -858,6 +869,60 @@ var ECG = (function () {
                 this.setThumbnailBg();
 
                 return true;
+            },
+
+            /**
+             * 根据在tc上点击事件的位置计算该点击事件在canvas中的位置
+             * x,y分别为event.scrollX, event.scrollY
+             *
+             * @param x
+             * @param y
+             * @returns {{x: number, y: number}}
+             */
+            getCoordinateInCanvas : function(x, y) {
+                var tc = doc.ecgDom.tc;
+                var rect = tc.getBoundingClientRect();
+
+                var body = document.body;
+                var scrollLeft = body.scrollLeft,
+                    scrollTop  = body.scrollTop;
+
+                // IE浏览器中getBoundingClientRect()方法从(2,2)开始计算坐标,
+                // 所以导致最终的计算结果比实际大了两个像素,
+                // 所以这里根据document.documentElement.client属性来计算起始计算坐标
+
+                var rectTop  = scrollTop + rect.top - document.documentElement.clientTop,
+                    rectLeft = scrollLeft + rect.left - document.documentElement.clientLeft;
+
+                return {
+                    x : x - rectLeft,
+                    y : y - rectTop
+                }
+            },
+
+            /**
+             * 给tc添加监听事件,
+             * 以便选择时间段查看心电图
+             */
+            addHandlerToTc : function() {
+                var tc = doc.ecgDom.tc;
+                if(tc.addEventListener) {
+                    tc.addEventListener('click', chart.selectTc);
+                } else if(tc.attachEvent) {
+                    tc.attachEvent('onclick', chart.selectTc);
+                } else {
+                    tc.onclick = chart.selectTc;
+                }
+            },
+            /**
+             * 根据canvas中的点击事件位置计算点击点在第几条缩略图
+             *
+             * @param y
+             * @returns {Number}
+             */
+            getLineNumInTc : function(y) {
+                return parseInt((y / doc.tc.space
+                ).toFixed(0));
             }
         };
 
@@ -871,26 +936,26 @@ var ECG = (function () {
              * @param param 存放样式ECG容器样式的对象
              * @returns {boolean} 设置成功返回true,否则返回false
              */
-            setStyle : function (param) {
-                if (!ECG.doc.isInit) {
+            setStyle : function(param) {
+                if(!ECG.doc.isInit) {
                     console.error('ECG对象未初始化');
                     return false;
                 }
 
-                if (typeof param !== 'object') {
+                if(typeof param !== 'object') {
                     console.error('setStyle参数错误');
                     return false;
                 } else {
                     // 这里最后的s指代style
                     var keys = Object.keys(param),
                         len  = keys.length;
-                    for (var i = 0; i < len; i++) {
-                        var key = keys[ i ];
-                        var subKeys = Object.keys(param[ key ]),
+                    for(var i = 0; i < len; i++) {
+                        var key = keys[i];
+                        var subKeys = Object.keys(param[key]),
                             subLen  = subKeys.length;
-                        for (var j = 0; j < subLen; j++) {
-                            var subKey = subKeys[ j ];
-                            ECG.doc.ecgDom[ key ].style[ subKey ] = param[ key ][ subKey ];
+                        for(var j = 0; j < subLen; j++) {
+                            var subKey = subKeys[j];
+                            ECG.doc.ecgDom[key].style[subKey] = param[key][subKey];
                         }
                     }
 
@@ -904,7 +969,7 @@ var ECG = (function () {
              * @param cw 单元格的宽度
              * @param ch 单元格的高度
              */
-            setCell : function (cw, ch) {
+            setCell : function(cw, ch) {
                 doc.cellWidth = cw;
                 doc.cellHeight = ch;
                 chart.drawBc();
@@ -916,8 +981,8 @@ var ECG = (function () {
              * @param obj 该参数的结构参照doc.descriptionWords
              * @returns {boolean} 成功返回true,否则返回false
              */
-            setDescriptionWordsStyle : function (obj) {
-                if (typeof obj !== 'object') {
+            setDescriptionWordsStyle : function(obj) {
+                if(typeof obj !== 'object') {
                     console.error('The type of param must be object.');
                     return false;
                 }
@@ -925,22 +990,22 @@ var ECG = (function () {
                 var descriptionWords = doc.descriptionWords.style;
                 var keys = Object.keys(obj);
                 var length = keys.length;
-                for (var i = 0; i < length; i++) {
-                    var key = keys[ i ];
-                    if (descriptionWords.hasOwnProperty(key)) {
-                        var subDW = descriptionWords[ key ];
-                        var subKeys = Object.keys(obj[ key ]);
+                for(var i = 0; i < length; i++) {
+                    var key = keys[i];
+                    if(descriptionWords.hasOwnProperty(key)) {
+                        var subDW = descriptionWords[key];
+                        var subKeys = Object.keys(obj[key]);
                         var subLength = subKeys.length;
-                        for (var j = 0; j < subLength; j++) {
-                            var subKey = subKeys[ j ];
-                            if (subDW.hasOwnProperty(subKey)) {
-                                subDW[ subKey ] = obj[ key ][ subKey ];
+                        for(var j = 0; j < subLength; j++) {
+                            var subKey = subKeys[j];
+                            if(subDW.hasOwnProperty(subKey)) {
+                                subDW[subKey] = obj[key][subKey];
                             }
                         }
                     }
                 }
 
-                if (!chart.drawBc()) {
+                if(!chart.drawBc()) {
                     return false;
                 }
 
@@ -952,7 +1017,7 @@ var ECG = (function () {
              *
              * @returns {boolean}
              */
-            setDescriptionWords : function () {
+            setDescriptionWords : function() {
                 var style = doc.descriptionWords.style;
                 var keys = Object.keys(style);
 
@@ -961,11 +1026,11 @@ var ECG = (function () {
                 bcContext.save();
 
                 var length = keys.length;
-                for (var i = 0; i < length; i++) {
-                    var key = keys[ i ];
-                    var subStyle = style[ key ];
+                for(var i = 0; i < length; i++) {
+                    var key = keys[i];
+                    var subStyle = style[key];
                     // 判断是否绘制该说明文字
-                    if (!subStyle.ifDraw) {
+                    if(!subStyle.ifDraw) {
                         continue;
                     }
 
@@ -987,7 +1052,7 @@ var ECG = (function () {
             /**
              * 设置背景中的边框样式
              */
-            setBorder : function () {
+            setBorder : function() {
                 var context = doc.context.bcContext;
                 context.beginPath();
                 context.strokeStyle = doc.theme.grid;
@@ -1006,8 +1071,8 @@ var ECG = (function () {
              * @param result
              * @returns {boolean}
              */
-            setEcgData : function (result) {
-                if (!result || !innerUtil.isObject(result)) {
+            setEcgData : function(result) {
+                if(!result || !innerUtil.isObject(result)) {
                     console.error('error: the param is wrong, please check the input param.');
                     return false;
                 }
@@ -1026,7 +1091,7 @@ var ECG = (function () {
              *
              * @returns {Array}
              */
-            getAllThemes : function () {
+            getAllThemes : function() {
                 return Object.keys(doc.themes);
             },
 
@@ -1035,20 +1100,20 @@ var ECG = (function () {
              *
              * @param name
              */
-            setTheme : function (name) {
-                if (!name || !innerUtil.isString(name)) {
+            setTheme : function(name) {
+                if(!name || !innerUtil.isString(name)) {
                     console.error('error: parameter is wrong, type String expected.');
 
                     return false;
                 }
 
-                if (!doc.themes.hasOwnProperty(name)) {
+                if(!doc.themes.hasOwnProperty(name)) {
                     console.error('error: name can not find in doc.themes, please check.');
 
                     return false;
                 }
 
-                var theme = doc.themes[ name ];
+                var theme = doc.themes[name];
                 doc.theme = theme;
 
                 // 设置ECG容器的背景颜色
@@ -1056,11 +1121,11 @@ var ECG = (function () {
                 canvas.style.backgroundColor = theme.background;
 
                 // 绘制背景
-                if (!chart.drawBc()) {
+                if(!chart.drawBc()) {
                     return false;
                 }
                 // 绘制fcContext
-                if (!chart.drawFc()) {
+                if(!chart.drawFc()) {
                     return false;
                 }
 
@@ -1073,9 +1138,9 @@ var ECG = (function () {
              * @param val
              * @returns {boolean}
              */
-            scrollLeft : function (val) {
+            scrollLeft : function(val) {
                 var result = innerUtil.initScrollVal(val);
-                if (false === result) {
+                if(false === result) {
                     return false;
                 }
                 doc.ecgDom.c.scrollLeft = result;
@@ -1089,9 +1154,9 @@ var ECG = (function () {
              * @param val
              * @returns {boolean}
              */
-            scrollRight : function (val) {
+            scrollRight : function(val) {
                 var result = innerUtil.initScrollVal(val, true);
-                if (false === result) {
+                if(false === result) {
                     return false;
                 }
 
@@ -1100,17 +1165,29 @@ var ECG = (function () {
                 return true;
             },
 
+            scrollLR : function(val) {
+                if(innerUtil.isNumber(val)) {
+                    doc.ecgDom.c.scrollLeft = val;
+
+                    return true;
+                } else {
+                    throw new TypeError('function scrollLR, val: number required, but ' + typeof val + ' is given.');
+
+                    return false;
+                }
+            },
+
             /**
              * 心电向上滚动
              */
-            scrollTop : function () {
+            scrollTop : function() {
                 var style = doc.descriptionWords.style;
                 var keys = Object.keys(style);
                 var len = keys.length;
 
-                for (var i = 0; i < len; i++) {
-                    var sk = keys[ i ];
-                    style[ sk ].index--;
+                for(var i = 0; i < len; i++) {
+                    var sk = keys[i];
+                    style[sk].index--;
                 }
 
                 doc.ifReposition = false;
@@ -1122,14 +1199,14 @@ var ECG = (function () {
             /**
              * 心电向下滚动
              */
-            scrollBottom : function () {
+            scrollBottom : function() {
                 var style = doc.descriptionWords.style;
                 var keys = Object.keys(style);
                 var len = keys.length;
 
-                for (var i = 0; i < len; i++) {
-                    var sk = keys[ i ];
-                    style[ sk ].index++;
+                for(var i = 0; i < len; i++) {
+                    var sk = keys[i];
+                    style[sk].index++;
                 }
 
                 doc.ifReposition = false;
@@ -1149,18 +1226,18 @@ var ECG = (function () {
              *
              * @param obj 存放canvas配置信息的对象
              */
-            init : function (obj) {
+            init : function(obj) {
                 // 检测配置信息, obj错误则直接返回
-                if (typeof obj !== 'object') {
+                if(typeof obj !== 'object') {
                     console.error('配置信息错误,请以对象的形式传入配置信息。');
                     return;
                 }
                 // 对ECG容器进行初始化
-                if ('id' in obj) {
+                if('id' in obj) {
                     // 验证是否能找到ECG容器
                     {
                         var ECG = innerUtil.checkECGContainer(obj.id);
-                        if (!ECG) {
+                        if(!ECG) {
                             console.error('ECG can not find by id');
                             return;
                         }
@@ -1182,7 +1259,7 @@ var ECG = (function () {
                     // 初始化doc.context.bcContext与doc.context.fcContext
                     {
                         doc.context.bcContext = doc.ecgDom.bc.getContext('2d');
-                        doc.context.fcContext = doc.ecgDom.fc[ doc.fc.drawIndex ].getContext('2d');
+                        doc.context.fcContext = doc.ecgDom.fc[doc.fc.drawIndex].getContext('2d');
                     }
 
                     // 标志ECG已被初始化
@@ -1211,22 +1288,22 @@ var ECG = (function () {
              * @param obj
              * @returns {boolean}
              */
-            initThumbnail : function (obj) {
+            initThumbnail : function(obj) {
                 // 检测入参类型是否为对象
-                if (typeof obj != 'object') {
+                if(typeof obj != 'object') {
                     console.error('配置信息错误,请以对象的形式传入参数');
                     return false;
                 }
                 // 在id存在的情况下进行下一步
-                if ('id' in obj) {
-                    if (!innerUtil.checkThumbnailContainer(obj.id)) {
+                if('id' in obj) {
+                    if(!innerUtil.checkThumbnailContainer(obj.id)) {
                         return false;
                     }
 
                     // 生成缩略图使用的canvas并添加到缩略图容器中
                     {
                         var c = innerUtil.createThumbnailC();
-                        if (!c) {
+                        if(!c) {
                             console.log('generate thumbnail canvas error, stream is interrupted.');
                             return false;
                         }
@@ -1236,9 +1313,9 @@ var ECG = (function () {
                     // 设置缩略图的样式
                     {
                         var ecgDom = doc.ecgDom;
-                        for (var i in tCss) {
-                            for (var j in tCss[ i ]) {
-                                ecgDom[ i ].style[ j ] = tCss[ i ][ j ];
+                        for(var i in tCss) {
+                            for(var j in tCss[i]) {
+                                ecgDom[i].style[j] = tCss[i][j];
                             }
                         }
                     }
@@ -1252,6 +1329,11 @@ var ECG = (function () {
                     {
                         innerUtil.drawThumbnailBg();
                     }
+
+                    // 给tc添加点击事件
+                    {
+                        innerUtil.addHandlerToTc();
+                    }
                 }
             },
 
@@ -1261,14 +1343,14 @@ var ECG = (function () {
              *
              * @returns {boolean}
              */
-            drawBc : function () {
+            drawBc : function() {
                 // todo 在绘制的时候要注意考虑doc.marginL
                 var canvas = doc.ecgDom.bc;     // 背景canvas对象
                 var context = doc.context.bcContext;
 
                 // 检测canvas是否存在
                 {
-                    if (!canvas) {
+                    if(!canvas) {
                         console.error('drawBc参数错误,未设置canvas或者找不到指定的canvas');
                         return false;
                     }
@@ -1315,12 +1397,12 @@ var ECG = (function () {
              *
              * @returns {boolean}
              */
-            clearFc : function () {
+            clearFc : function() {
                 var fcs = doc.ecgDom.fc;
                 var len = fcs.length;
                 // 现在是fc组的形式来画心电, 所以循环清除画布内容
-                for (var i = 0; i < len; i++) {
-                    var fc = fcs[ i ];
+                for(var i = 0; i < len; i++) {
+                    var fc = fcs[i];
                     var context = fc.getContext('2d');
                     var fcWidth = fc.width;
                     var fcHeight = fc.height;
@@ -1333,7 +1415,7 @@ var ECG = (function () {
                 // 重置drawIndex
                 doc.fc.drawIndex = 0;
                 //
-                doc.context.fcContext = doc.ecgDom.fc[ 0 ].getContext('2d');
+                doc.context.fcContext = doc.ecgDom.fc[0].getContext('2d');
 
                 return true;
             },
@@ -1343,7 +1425,7 @@ var ECG = (function () {
              *
              * @returns {boolean}
              */
-            clearTc : function () {
+            clearTc : function() {
                 var context = doc.context.tcContext;
                 var w = doc.ecgDom.tc.width;
                 var h = doc.ecgDom.tc.height;
@@ -1358,15 +1440,15 @@ var ECG = (function () {
              * @param name
              * @returns {boolean}
              */
-            hideECG : function (name) {
-                if (name) {
+            hideECG : function(name) {
+                if(name) {
                     var style = doc.descriptionWords.style;
-                    if (innerUtil.isArray(name)) {
+                    if(innerUtil.isArray(name)) {
                         var len = name.length;
-                        for (var i = 0; i < len; i++) {
-                            var subName = name[ i ];
-                            if (style[ subName ]) {
-                                style[ subName ].ifDraw = false;
+                        for(var i = 0; i < len; i++) {
+                            var subName = name[i];
+                            if(style[subName]) {
+                                style[subName].ifDraw = false;
 
                                 this.drawBc();
                                 this.drawFc();
@@ -1379,8 +1461,8 @@ var ECG = (function () {
                             }
                         }
                     } else {
-                        if (style[ name ]) {
-                            style[ name ].ifDraw = false;
+                        if(style[name]) {
+                            style[name].ifDraw = false;
 
                             this.drawBc();
                             this.drawFc();
@@ -1401,15 +1483,15 @@ var ECG = (function () {
              * @param name
              * @returns {boolean}
              */
-            showECG : function (name) {
-                if (name) {
+            showECG : function(name) {
+                if(name) {
                     var style = doc.descriptionWords.style;
-                    if (innerUtil.isArray(name)) {
+                    if(innerUtil.isArray(name)) {
                         var len = name.length;
-                        for (var i = 0; i < len; i++) {
-                            var subName = name[ i ];
-                            if (style[ subName ]) {
-                                style[ subName ].ifDraw = true;
+                        for(var i = 0; i < len; i++) {
+                            var subName = name[i];
+                            if(style[subName]) {
+                                style[subName].ifDraw = true;
 
                                 this.drawBc();
                                 this.drawFc();
@@ -1421,8 +1503,8 @@ var ECG = (function () {
                             }
                         }
                     } else {
-                        if (style[ name ]) {
-                            style[ name ].ifDraw = true;
+                        if(style[name]) {
+                            style[name].ifDraw = true;
 
                             this.drawBc();
                             this.drawFc();
@@ -1442,8 +1524,8 @@ var ECG = (function () {
              * @param val
              * @returns {boolean}
              */
-            setGain : function (val) {
-                if (!innerUtil.isNumber(val)) {
+            setGain : function(val) {
+                if(!innerUtil.isNumber(val)) {
                     console.error('error: the type of val is not Number but ' + Object.prototype.toString.call(val));
                     return false;
                 }
@@ -1452,7 +1534,7 @@ var ECG = (function () {
                 doc.fc.gain.mul = val / doc.fc.gain.std;
 
                 var result = this.drawFc();
-                if (!result) {
+                if(!result) {
                     return false;
                 }
 
@@ -1464,8 +1546,8 @@ var ECG = (function () {
              * @param val
              * @returns {boolean}
              */
-            setPs : function (val) {
-                if (!innerUtil.isNumber(val)) {
+            setPs : function(val) {
+                if(!innerUtil.isNumber(val)) {
                     console.error('error: the type of the val is not Number but' + Object.prototype.toString.call(val));
                     return false;
                 }
@@ -1473,6 +1555,7 @@ var ECG = (function () {
                 doc.fc.ps.cur = val;
                 var mul = val / doc.fc.ps.std;
                 doc.fc.ps.mul = mul;
+                doc.fc.pxPerData = doc.cellWidth * doc.colsPerSecond * mul / doc.rate;
 
                 // 重新计算c_in容器的宽度
                 var tWidth = doc.cellWidth * doc.colsPerSecond * 72 * mul;
@@ -1492,7 +1575,7 @@ var ECG = (function () {
                 // 设置样式
                 outUtil.setStyle(css);
 
-                if (!this.drawFc()) {
+                if(!this.drawFc()) {
                     return false;
                 }
 
@@ -1504,7 +1587,7 @@ var ECG = (function () {
              *
              * @returns {boolean}
              */
-            drawFc : function () {
+            drawFc : function() {
                 // 每次绘制先清空fc画布
                 {
                     this.clearFc();
@@ -1517,26 +1600,26 @@ var ECG = (function () {
                     var allDrawECGLen = allDrawECG.length;
                     var avgLead = ecgData.avgLead;
 
-                    for (var i = 0; i < allDrawECGLen; i++) {
-                        var name = allDrawECG[ i ];
+                    for(var i = 0; i < allDrawECGLen; i++) {
+                        var name = allDrawECG[i];
                         var index = innerUtil.getEcgIndex(name);
-                        for (var j = 0; j < 18; j++) {
-                            var subBlocks = ecgPartBlocks[ j ];
-                            var ecgPartBlocksData = subBlocks[ 'ecgPartBlockData' ];
-                            var ecgPartBlocksHead = subBlocks[ 'ecgPartBlockHead' ];
-                            var data = ecgPartBlocksData[ index ];
+                        for(var j = 0; j < 18; j++) {
+                            var subBlocks = ecgPartBlocks[j];
+                            var ecgPartBlocksData = subBlocks['ecgPartBlockData'];
+                            var ecgPartBlocksHead = subBlocks['ecgPartBlockHead'];
+                            var data = ecgPartBlocksData[index];
                             var dataLen = data.length;
 
                             // 绘制心电时间
-                            if (0 == i) {
-                                var time = ecgPartBlocksHead[ 'headTime' ] + ' 心率: ' + ecgPartBlocksHead[ 'hrVal' ];
-                                innerUtil.drawTime(time, allDrawECG[ 0 ]);
+                            if(0 == i) {
+                                var time = ecgPartBlocksHead['headTime'] + ' 心率: ' + ecgPartBlocksHead['hrVal'];
+                                innerUtil.drawTime(time, allDrawECG[0]);
                             }
 
-                            for (var k = 0; k < dataLen; k++) {
-                                var v = data[ k ];
-                                if (avgLead) {
-                                    v -= avgLead[ index ];
+                            for(var k = 0; k < dataLen; k++) {
+                                var v = data[k];
+                                if(avgLead) {
+                                    v -= avgLead[index];
                                 }
                                 innerUtil.drawECG(name, v);
                             }
@@ -1552,8 +1635,12 @@ var ECG = (function () {
              *
              * @param name
              */
-            drawTc : function (name) {
+            drawTc : function(name) {
                 name = name ? name : 'V1';
+                // 将当前绘制缩略图心电的名字保存
+                {
+                    doc.tc.name = name;
+                }
                 // 清除原来的内容
                 {
                     this.clearTc();
@@ -1577,6 +1664,7 @@ var ECG = (function () {
                     var lines = Math.ceil(tWidth / cWidth) + 1;
                     // 每行心电的间隔
                     var space = Math.floor(cHeight / lines);
+                    tc.space = space;
                     // tc心电坐标
                     var co = doc.tc.coordinate;
                 }
@@ -1594,21 +1682,21 @@ var ECG = (function () {
                     var avgLead = ecgData.avgLead;
                     var index = innerUtil.getEcgIndex(name);
 
-                    for (var i = 0; i < 18; i++) {
-                        if (!innerUtil.isArray(ecgPartBlocks) || ecgPartBlocks.length ==0) {
+                    for(var i = 0; i < 18; i++) {
+                        if(!innerUtil.isArray(ecgPartBlocks) || ecgPartBlocks.length == 0) {
                             console.error('ecgPartBlocks is not an Array or the array is empty.');
                             return false;
                         }
-                        var subBlocks = ecgPartBlocks[ i ];
-                        var ecgPartBlocksData = subBlocks[ 'ecgPartBlockData' ];
-                        var data = ecgPartBlocksData[ index ];
-                        for (var j = 0; j < data.length; j++) {
-                            var v = data[ j ];
+                        var subBlocks = ecgPartBlocks[i];
+                        var ecgPartBlocksData = subBlocks['ecgPartBlockData'];
+                        var data = ecgPartBlocksData[index];
+                        for(var j = 0; j < data.length; j++) {
+                            var v = data[j];
 
                             // 处理x坐标
                             {
                                 var x = co.x + tc.pxPerData;
-                                if (x > cWidth) {
+                                if(x > cWidth) {
                                     tc.line++;
                                     x -= cWidth;
                                     co.x = 0;
@@ -1617,13 +1705,13 @@ var ECG = (function () {
                             }
                             // 处理心电电压
                             {
-                                if (avgLead) {
-                                    v -= avgLead[ index ];
+                                if(avgLead) {
+                                    v -= avgLead[index];
                                 }
                                 v *= tc.pxPerMv;
                                 v = tc.line * space - v;
                             }
-                            if (0 == co.x) {
+                            if(0 == co.x) {
                                 co.y = v;
                             }
                             // 绘制缩略图
@@ -1642,6 +1730,77 @@ var ECG = (function () {
                     c.stroke();
                 }
             },
+
+            /**
+             * 绘制选中的区域,
+             * x: 要绘制的起始点,即点击事件发生在tc中的x坐标
+             * lineNum: 由于缩略图分为很多条, 该参数为第几条缩略图
+             *
+             * @param x
+             * @param lineNum
+             */
+            drawSelectedArea : function(x, lineNum) {
+                // 参数校验
+                {
+                    if('number' != typeof x) {
+                        throw new TypeError('function drawSelectedArea, param x: number required, but ' + typeof x + ' given');
+                    }
+                    if('number' != typeof lineNum) {
+                        throw new TypeError('function drawSelectedArea, param lineNum: number required, but ' + typeof x + ' given');
+                    }
+                }
+                // 边框绘制参数
+                {
+                    var tc = doc.tc;
+                    var sWidth = tc.sWidth;
+                    var sHeight = tc.sHeight;
+                    x = x - 0.5;
+                    var y = lineNum * tc.space - sHeight / 2 - 0.5;
+                }
+                // 绘制选中区域
+                {
+                    var c = doc.context.tcContext;
+                    c.beginPath();
+                    c.strokeStyle = doc.theme.optionColor;
+                    c.rect(x, y, sWidth, sHeight);
+                    c.stroke();
+                }
+            },
+
+            selectTc : function(e) {
+                // 这里不考虑IE8及更低版本不支持event.pageX和event.pageY
+                var pageX = e.pageX,
+                    pageY = e.pageY;
+
+                // 获取点击点在canvas中的位置
+                {
+                    var coor = innerUtil.getCoordinateInCanvas(pageX, pageY);
+                }
+
+                // 获取点击点在canvas中第几条心电缩略图的位置
+                {
+                    var lineNum = innerUtil.getLineNumInTc(coor.y);
+                }
+
+                // 在点击位置绘制框框
+                {
+                    if(('number' == typeof lineNum
+                       ) && lineNum > 0) {  // lineNum为0时不绘制
+                        chart.drawTc(doc.tc.name);
+                        chart.drawSelectedArea(coor.x, lineNum);
+                    }
+                }
+
+                // 移动fc到缩略图选中的位置
+                {
+                    var tcWidth = doc.ecgDom.tc.width;
+                    var x = (lineNum - 1
+                            ) * tcWidth + coor.x;
+                    var xInFc = x * (doc.fc.pxPerData / doc.tc.pxPerData
+                        );
+                    outUtil.scrollLR(xInFc);
+                }
+            }
         };
 
         // 返回

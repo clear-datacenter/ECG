@@ -1,4 +1,4 @@
-<h2>ECG.js文档-chart部分</h2>
+## ECG.js文档-chart部分
 
 **注：该文档为ECG.js中chart部分的文档，chart对象可通过ECG.chart获取。下面使用的chart对象默认为ECG.chart。**
 
@@ -27,7 +27,7 @@ obj {
 ```
 
 
-<h3>chart.drawBc()方法</h3>
+### chart.drawBc()方法
 
 该方法用户绘制ECG容器的背景，并且会将绘制好的背景导出为base64格式的图片，设置为ECG容器最外层doc.ecgDom.c的背景。该函数全部调用ECG内部封装的方法，所以没有参数。
 
@@ -80,7 +80,7 @@ name：可以为字符串或者数组，例'aVF', ['V1', 'Pacer', 'aVF']。
 清除成功返回true，否则返回false
 ```
 
-###chart.showECG()方法
+### chart.showECG()方法
 
 该方法用于显示指定的心电图线条。方法内部调用了chart.drawFc()方法，在设置后会立即重绘。
 
@@ -108,7 +108,7 @@ val：要设置的新的的增益
 {boolean} 设置成功返回true，否则返回false
 ```
 
-<h3>chart.setPs()方法</h3>
+### chart.setPs()方法
 
 该方法用于重新设置心电的走速，入参要求必须为数字，包括整型和浮点类型，不能是字符串形式的数字。
 
@@ -122,7 +122,7 @@ val：要设置的新的走速
 {boolean} 
 ```
 
-<h3>chart.drawFc()方法</h3>
+### chart.drawFc()方法
 
 该方法用于绘制fc中各个canvas中要绘制的心电图形和心电时间。
 
@@ -143,6 +143,20 @@ chart.drawTc(name);
 
 参数：
 name：要绘制的心电的名字
+
+返回值：
+{boolean}: 绘制成功则返回true，否则返回false
+```
+
+### chart.selectTc(e)方法
+
+该方法用于根据发生在doc.ecgDom.tc上的点击事件的位置，来动态的选择要展示在视口中的心电片段。
+
+```javascript
+chart.selectTc(e);
+
+参数：
+e：点击事件event
 
 返回值：
 {boolean}: 绘制成功则返回true，否则返回false

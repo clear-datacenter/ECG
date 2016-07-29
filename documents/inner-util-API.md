@@ -320,3 +320,45 @@ innerUtil.drawThumbnailBg();
 返回值：
 {boolean}: 设置成功返回true，绘制失败返回false
 ```
+
+### innerUtil.getCoordinateInCanvas()方法
+
+该方法根据在canvas上点击事件的位置计算该点击事件在canvas中的位置。
+
+```javascript
+innerUtil.getCoordinateInCanvas(x, y);
+
+参数：
+x：点击事件的pageX属性
+y：点击事件的pageY属性
+
+返回值：
+{{x: number, y: number}}: 返回x，y
+```
+
+### innerUtil.addHandlerToTc()方法
+
+该方法用于给doc.ecgDom.tc添加监听事件，监听事件为chart.selectTc()方法。
+
+```javascript
+innerUtil.addHandlerToTc();
+
+参数：无
+
+返回值：
+无
+```
+
+### innerUtil.getLineNumInTc()方法
+
+该方法根据canvas中的点击事件位置计算点击点在第几条缩略图。
+
+```javascript
+innerUtil.getLineNumInTc(y);
+
+参数：
+y：点击事件在canvas中发生的位置
+
+返回值：
+{number}: canvas中点击事件在缩略图中位于第几条缩略心电
+```
