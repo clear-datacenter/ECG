@@ -149,3 +149,16 @@ val：向右滚动的距离
 返回值：
 {boolean}: 成功返回true，否则返回false
 ```
+
+### outUtil.scrollTop() / outUtil.scrollBottom()方法
+
+该方法用于上下移动心电图。
+
+```javascript
+outUtil.scrollTop();
+
+参数：无
+
+返回值：
+{boolean}: 成功返回true，否则返回false
+```

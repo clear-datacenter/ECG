@@ -362,3 +362,17 @@ y：点击事件在canvas中发生的位置
 返回值：
 {number}: canvas中点击事件在缩略图中位于第几条缩略心电
 ```
+
+### innerUtil.moveSelectedAreaIntoView()方法
+
+该方法将缩略图选中区域的开始位置移动到视口中。
+
+```javascript
+innerUtil.moveSelectedAreaIntoView(x, lineNum);
+
+参数：
+x: 选中区域的x坐标
+lineNum: 选中区域在第几条心电范围内
+
+返回值：无
+```

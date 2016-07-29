@@ -923,6 +923,23 @@ var ECG = (function() {
             getLineNumInTc : function(y) {
                 return parseInt((y / doc.tc.space
                 ).toFixed(0));
+            },
+
+            /**
+             * 将缩略图选中区域的开始位置移动到视口中
+             * x: 选中区域的x坐标
+             * lineNum: 选中区域在第几条心电范围内
+             *
+             * @param x
+             * @param lineNum
+             */
+            moveSelectedAreaIntoView : function(x, lineNum) {
+                var tcWidth = doc.ecgDom.tc.width;
+                var x = (lineNum - 1
+                        ) * tcWidth + x;
+                var xInFc = x * (doc.fc.pxPerData / doc.tc.pxPerData
+                    );
+                outUtil.scrollLR(xInFc);
             }
         };
 
@@ -1165,6 +1182,12 @@ var ECG = (function() {
                 return true;
             },
 
+            /**
+             * 左右滚动fc
+             *
+             * @param val
+             * @returns {boolean}
+             */
             scrollLR : function(val) {
                 if(innerUtil.isNumber(val)) {
                     doc.ecgDom.c.scrollLeft = val;
@@ -1214,7 +1237,6 @@ var ECG = (function() {
                 chart.drawFc();
                 doc.ifReposition = true;
             }
-
         };
 
         /**
@@ -1767,6 +1789,11 @@ var ECG = (function() {
                 }
             },
 
+            /**
+             * 在缩略图中选择区域
+             *
+             * @param e
+             */
             selectTc : function(e) {
                 // 这里不考虑IE8及更低版本不支持event.pageX和event.pageY
                 var pageX = e.pageX,
@@ -1793,12 +1820,7 @@ var ECG = (function() {
 
                 // 移动fc到缩略图选中的位置
                 {
-                    var tcWidth = doc.ecgDom.tc.width;
-                    var x = (lineNum - 1
-                            ) * tcWidth + coor.x;
-                    var xInFc = x * (doc.fc.pxPerData / doc.tc.pxPerData
-                        );
-                    outUtil.scrollLR(xInFc);
+                    innerUtil.moveSelectedAreaIntoView(coor.x, lineNum);
                 }
             }
         };
