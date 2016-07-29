@@ -148,6 +148,20 @@ name：要绘制的心电的名字
 {boolean}: 绘制成功则返回true，否则返回false
 ```
 
+### chart.drawSelectedArea()方法
+
+该方法用于绘制绘制选中的区域。
+
+```javascript
+chart.drawSelectedArea(x, lineNum);
+
+参数：
+x：选中区域的x坐标
+lineNum：选中区域在第几条缩略图范围内
+
+返回值：无
+```
+
 ### chart.selectTc(e)方法
 
 该方法用于根据发生在doc.ecgDom.tc上的点击事件的位置，来动态的选择要展示在视口中的心电片段。
