@@ -1784,8 +1784,7 @@ var ECG = (function() {
                     var c = doc.context.tcContext;
                     c.beginPath();
                     c.strokeStyle = doc.theme.optionColor;
-                    c.rect(x, y, sWidth, sHeight);
-                    c.stroke();
+                    c.strokeRect(x, y, sWidth, sHeight);
                 }
             },
 
