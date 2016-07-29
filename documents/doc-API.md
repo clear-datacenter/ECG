@@ -139,7 +139,9 @@ doc.fc = {
 	// fc的总个数，计算方法：cellWidth * colsPerSecond * 72 * doc.fc.ps.mul(走速的放大倍数)／ fcWidth
 	fcNum: 3,
 	// 正在绘制内容的canvas的索引
-	drawIndex: 0
+	drawIndex: 0,
+	// 每条数据在x轴的跨度
+	pxPerData: 2
 }
 ```
 
@@ -149,6 +151,9 @@ doc.fc = {
 
 ```javascript
 doc.tc = {
+    // 当前绘制缩略图心电的名字
+    name: 'V1',
+    // 心电坐标
 	coordinate: {
 		x: 2,
 		y: 0
@@ -156,7 +161,11 @@ doc.tc = {
 	// 由于一条线段绘制不完，所以需要换行，line表示当前是绘制的第几行，用于计算基线位置
 	line：1，
 	// 每条数据需要多少个像素表示（x轴）
-	pxPerData
+	pxPerData：1,
+	// 每毫伏用多少像素表示(y轴)
+	pxPerMv: 15,
+	// 表示每两条缩略图之间的间隔，该数值会根据缩略canvas的高度动态计算
+	space：25
 }
 ```
 
@@ -207,7 +216,8 @@ theme: {
 	grid: '',
 	line: '',
 	lineWidth: 1,
-	dotWidth: 1
+	dotWidth: 1,
+	optionColor: '',	// 缩略图框框的颜色以及设置
 }
 ```
 
