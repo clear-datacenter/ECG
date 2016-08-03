@@ -201,6 +201,20 @@ obj：要检测的对象
 {boolean}：如果入参为Object类型则返回true，否则返回false。
 ```
 
+### innerUtil.isLeapYear()方法
+
+该方法用于检测一个年份是否是闰年。
+
+```javascript
+innerUtil.isLeapYear(year);
+
+参数：
+year：要检测的年份
+
+返回值：
+{boolean}：如果入参为闰年则返回true，否则返回false。
+```
+
 ### innerUtil.getEcgIndex()方法
 
 该方法用于获取对应的心电数据在ECG.doc.ecgData.ecgPartBlocks[n][ecgPartBlockData]中的位置。
@@ -375,4 +389,47 @@ x: 选中区域的x坐标
 lineNum: 选中区域在第几条心电范围内
 
 返回值：无
+```
+
+### innerUtil.getFirstTime()方法
+
+该方法从心电数据中获取第一条心电数据的起始时间，用于计算缩略图中选中部分的起始时间。
+
+```javascript
+innerUtil.getFirstTime();
+
+参数：无
+
+返回值：
+{*}：成功返回心电时间字符串，否则返回false
+```
+
+### innerUtil.timeAdd()方法
+
+该方法用于在时间字符串和秒数相加。
+
+```javascript
+innerUtil.timeAdd(timeString, second);
+
+参数：
+timeString: 时间字符串
+second: 秒数
+
+返回值：
+{*}：返回相加后的时间字符串
+```
+
+### innerUtil.getSelectedTime()方法
+
+该方法根据心电数据中获取第一条心电数据的起始时间计算缩略图中选中部分的起始时间。
+
+```javascript
+innerUtil.getSelectedTime(x, lineNum);
+
+参数：
+x：缩略图中选择区域的起始x坐标
+lineNum: 当前选择的为第几条缩略图
+
+返回值：
+{*}：成功返回心电时间字符串，否则返回false
 ```
