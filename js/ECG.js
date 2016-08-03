@@ -125,7 +125,7 @@ var ECG = (function() {
                 // 选择框的宽度
                 sWidth     : 200,
                 // 选择框的高度
-                sHeight    : 20
+                sHeight    : 12
             },
 
             rowsPerLine   : 5,        // 每条心电图占用几行
@@ -456,6 +456,23 @@ var ECG = (function() {
              */
             isObject : function(obj) {
                 if(obj && Object.prototype.toString.call(obj) == '[object Object]') {
+                    return true;
+                }
+
+                return false;
+            },
+
+            /**
+             * 判断是否为闰年
+             *
+             * @param year
+             * @returns {boolean}
+             */
+            isLeapYear : function(year) {
+                if((year % 4 == 0
+                   ) && (year % 100 != 0
+                   ) || (year % 400 == 0
+                   )) {
                     return true;
                 }
 
@@ -940,6 +957,162 @@ var ECG = (function() {
                 var xInFc = x * (doc.fc.pxPerData / doc.tc.pxPerData
                     );
                 outUtil.scrollLR(xInFc);
+            },
+
+            /**
+             * 从数据中获取采集第一条数据的时间,
+             * 用以计算缩略图中选中部分的起始时间
+             *
+             * @returns {*}
+             */
+            getFirstTime : function() {
+                if(doc.ecgData && 'ecgPartBlocks' in doc.ecgData) {
+                    return doc.ecgData.ecgPartBlocks[0].ecgPartBlockHead.headTime;
+                }
+
+                return false;
+            },
+
+            /**
+             * 时间字符串与秒数相加返回时间字符串
+             *
+             * @param timeString
+             * @param second
+             * @returns {string}
+             */
+            timeAdd : function(timeString, second) {
+                var arr = timeString.split(' ');
+                var dArr = arr[0].split('-');
+                var tArr = arr[1].split(':');
+                var y = dArr[0];
+                var M = dArr[1];
+                var d = dArr[2];
+                var h = tArr[0];
+                var m = tArr[1];
+                var s = tArr[2];
+
+                {
+                    s = parseFloat(s);
+                    s += parseInt(second);
+                    if(s > 59) {
+                        var ms = parseInt(s / 60);
+                        s = s % 60;
+                    }
+                    if(s < 10) {
+                        s = '0' + s;
+                    }
+                }
+                {
+                    if(ms) {
+                        m = parseInt(m);
+                        m += ms;
+                        if(m > 59) {
+                            var mm = parseInt(m / 60);
+                            m = m % 60;
+                        }
+                        if(m < 10) {
+                            m = '0' + m;
+                        }
+                    }
+                }
+                {
+                    if(mm) {
+                        h = parseInt(h);
+                        h += mm;
+                        if(h > 23) {
+                            var mh = parseInt(h / 24);
+                            h = h % 24;
+                        }
+                        if(h < 10) {
+                            h = '0' + h;
+                        }
+                    }
+                }
+                {
+                    if(mh) {
+                        d = parseInt(d);
+                        M = parseInt(M);
+                        d += mh;
+                        var year = new Date().getFullYear();
+                        var isLeapYear = this.isLeapYear(year);
+                        var big = [1,
+                                   3,
+                                   5,
+                                   7,
+                                   8,
+                                   10,
+                                   12];
+                        var small = [4,
+                                     6,
+                                     9,
+                                     11];
+                        if(M == 2 && isLeapYear) {
+                            if(d > 29) {
+                                var md = 1;
+                                d = '01';
+                            }
+                        } else if(M == 2 && !isLeapYear) {
+                            if(d > 28) {
+                                var md = 1;
+                                d = '01';
+                            }
+                        } else if(big.indexOf(M) >= 0) {
+                            if(d > 31) {
+                                var md = 1;
+                                d = '01';
+                            }
+                        } else if(small.indexOf(M) >= 0) {
+                            if(d > 30) {
+                                var md = 1;
+                                d = '01';
+                            }
+                        }
+                    }
+                }
+                {
+                    if(md) {
+                        M = parseInt(M);
+                        M += md;
+                        if(M > 12) {
+                            var mM = 1;
+                            M = '01';
+                        }
+                    }
+                }
+                {
+                    if(mM) {
+                        y = parseInt(y);
+                        y += mM;
+                    }
+                }
+
+                return y + '-' + M + '-' + d + ' ' + h + ':' + m + ':' + s;
+            },
+
+            /**
+             * 根据心电数据中第一条心电数据的时间计算缩略图中选中部分的起始时间
+             * x:缩略图中选中的部分的起始坐标
+             * lineNum:缩略图中选中第几条心电缩略图
+             *
+             * @param x
+             * @param lineNum
+             * @returns {*}
+             */
+            getSelectedTime : function(x, lineNum) {
+                var firstTime = this.getFirstTime();
+                if(firstTime) {
+                    var xs = x + (lineNum - 1
+                                 ) * doc.ecgDom.tc.width;
+                    var s = parseInt(xs / doc.tc.pxPerData / doc.rate);
+                    var ms = xs % (doc.tc.pxPerData * doc.rate
+                        );
+                    var time = this.timeAdd(firstTime, s);
+                    time += ':' + ms;
+
+                    return time;
+                } else {
+                    return false;
+                }
             }
         };
 
@@ -1789,6 +1962,25 @@ var ECG = (function() {
             },
 
             /**
+             * 在选择框上面绘制选择心电片段的时间
+             *
+             * @param x
+             * @param lineNum
+             * @param time
+             */
+            drawSelectedTime : function(x, lineNum, time) {
+                var tc = doc.tc;
+                var sHeight = tc.sHeight;
+                x -= 0.5;
+                var y = lineNum * tc.space - sHeight / 2 - 1;
+
+                var context = doc.context.tcContext;
+                context.beginPath();
+                context.fillStyle = doc.theme.optionColor;
+                context.fillText(time, x, y);
+            },
+
+            /**
              * 在缩略图中选择区域
              *
              * @param e
@@ -1814,6 +2006,8 @@ var ECG = (function() {
                        ) && lineNum > 0) {  // lineNum为0时不绘制
                         chart.drawTc(doc.tc.name);
                         chart.drawSelectedArea(coor.x, lineNum);
+                        var time = innerUtil.getSelectedTime(coor.x, lineNum);
+                        chart.drawSelectedTime(coor.x, lineNum, time);
                     }
                 }
 

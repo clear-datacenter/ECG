@@ -162,6 +162,21 @@ lineNum：选中区域在第几条缩略图范围内
 返回值：无
 ```
 
+### chart.drawSelectedTime()方法
+
+该方法用于绘制绘制选中的区域的时间。
+
+```javascript
+chart.drawSelectedTime(x, lineNum, time);
+
+参数：
+x：选中区域的x坐标
+lineNum：选中区域在第几条缩略图范围内
+time: 要绘制的时间
+
+返回值：无
+```
+
 ### chart.selectTc(e)方法
 
 该方法用于根据发生在doc.ecgDom.tc上的点击事件的位置，来动态的选择要展示在视口中的心电片段。
