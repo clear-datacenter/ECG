@@ -356,8 +356,13 @@ var ECG = (function() {
              *
              * @param name 要绘制的心电的名字,具体参见doc.fc.coordinate中的对象
              * @param v 当前要绘制线段终点的心电电压
+             * @param nextLine 是否换行
              */
-            drawECG : function(name, v) {
+            drawECG : function(name, v, nextLine) {
+                if(nextLine) {
+                    doc.context.fcContext = document.querySelector('#fc0').getContext('2d');
+                    doc.fc.drawIndex = 0;
+                }
                 var coordinate = doc.fc.coordinate[name];
                 var gainMultiple = doc.fc.gain.mul;
                 // 每条线段的x轴宽度
@@ -387,7 +392,7 @@ var ECG = (function() {
                             doc.context.fcContext =
                                 doc.ecgDom.fc[doc.fc.drawIndex].getContext('2d');
                         }
-                        destinationX = 0;
+                        destinationX = space;
                     }
                 }
                 // 绘制线段
@@ -1813,10 +1818,12 @@ var ECG = (function() {
 
                             for(var k = 0; k < dataLen; k++) {
                                 var v = data[k];
+                                var nextLine = (j == 0 && k == 0
+                                ) ? true : false;
                                 if(avgLead) {
                                     v -= avgLead[index];
                                 }
-                                innerUtil.drawECG(name, v);
+                                innerUtil.drawECG(name, v, nextLine);
                             }
                         }
                     }
