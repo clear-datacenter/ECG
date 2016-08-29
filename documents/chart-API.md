@@ -134,6 +134,19 @@ chart.drawFc();
 返回值：{boolean} 绘制成功返回true
 ```
 
+### chart.fcScale()方法
+
+该方法用于根据设置缩放比例并根据缩放比例重新绘制心电图。
+
+```javascript
+chart.fcScale(mul);
+
+参数：
+mul: 缩放比例
+
+返回值：无
+```
+
 ### chart.drawTc()方法
 
 该方法用于绘制缩略图中的指定心电的图形。

@@ -46,6 +46,16 @@
     <button id="bottom">下</button>
     <button id="left">左</button>
     <button id="right">右</button>
+    <label>
+        缩放
+        <select id="scale">
+            <option value="0.25">25%</option>
+            <option value="0.50">50%</option>
+            <option value="1" selected>100%</option>
+            <option value="1.5">150%</option>
+            <option value="2">200%</option>
+        </select>
+    </label>
     <div id="ecg-group">
         <label for="v1">v1<input name="v1" id="V1" type="checkbox" checked></label>
         <label for="v1">v5<input name="v5" id="V5" type="checkbox" checked></label>
@@ -69,11 +79,16 @@
 </noscript>
 <script>
     // 缩略图绑定事件
-    $(function () {
-        $('#thumbnail-se').on('change', function () {
+    $(function() {
+        $('#thumbnail-se').on('change', function() {
             var val = $(this).val();
             ECG.chart.drawTc(val);
         });
+        $('#scale').on('change', function() {
+            var mul = $(this).val();
+            console.log('scale changed: ' + mul);
+            ECG.chart.fcScale(mul);
+        })
     });
 </script>
 </body>

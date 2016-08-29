@@ -308,6 +308,30 @@ width: 要设置的次外层容器的宽度的数值
 {boolean}: 设置成功返回true，否则返回false
 ```
 
+### innerUtil.emptyCIn()方法
+
+该方法用于清空doc.ecgDom.c_in容器。
+
+```javascript
+innerUtil.emptyCIn();
+
+参数：无
+
+返回值：无
+```
+
+### innerUtil.fillCIn()方法
+
+该方法用于填充doc.ecgDom.c_in容器。
+
+```javascript
+innerUtil.fillCIn();
+
+参数：无
+
+返回值：无
+```
+
 ### innerUtil.initScrollVal()方法
 
 该方法用于初始化左右滚动的距离，如果没有入参则默认滚动doc.ecgDom.c的宽度的距离。该方法会在当前c的左右滚动距离的基础上加上或者减去要滚动的距离。
