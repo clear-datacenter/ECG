@@ -141,7 +141,9 @@ doc.fc = {
 	// 正在绘制内容的canvas的索引
 	drawIndex: 0,
 	// 每条数据在x轴的跨度
-	pxPerData: 2
+	pxPerData: 2,
+	// 缩放的倍数，默认为1
+	scale:1
 }
 ```
 

@@ -32,7 +32,7 @@ var ECG = (function() {
             },
 
             width        : 1000,    // ECG容器的宽度
-            height       : 500,     // ECG容器的高度
+            height       : 400,     // ECG容器的高度
             marginL      : 1,      // canvas左边边距,用来存放说明性的文字
             tWidth       : 1001,     // canvas元素的总宽度
             cellWidth    : 50,       // 背景单元格宽度
@@ -96,14 +96,18 @@ var ECG = (function() {
                         y : 450
                     }
                 },
-                // 每个fc的宽度
+                // 每个fc的初始宽度
+                initWidth  : 3000,
+                // 当前每个fc的宽度
                 fcWidth    : 3000,
                 // 一共需要多少个fc
                 fcNum      : 6,
                 drawIndex  : 0,
                 // 每条数据的x轴跨度,
                 // 计算方式:doc.cellWidth * doc.colsPerSecond * psMultiple / doc.rate;
-                pxPerData  : 2
+                pxPerData  : 2,
+                // 心电图的缩放比例
+                scale      : 1
             },
             // 主要存放doc.ecgDom.tc的配置信息
             tc               : {
@@ -398,7 +402,12 @@ var ECG = (function() {
                 // 绘制线段
                 {
                     var context = doc.context.fcContext;
+                    // 根据设置的缩放比例缩放心电
+                    var scale = doc.fc.scale;
+                    context.save();
                     context.beginPath();
+                    context.lineWidth = context.lineWidth / scale;
+                    context.scale(scale, scale);
                     context.strokeStyle = doc.theme.line;
                     context.moveTo(coordinate.x, coordinate.y);
                     context.lineTo(destinationX, destinationY);
@@ -411,6 +420,7 @@ var ECG = (function() {
                 }
 
                 context.stroke();
+                context.restore();
             },
 
             /**
@@ -585,6 +595,7 @@ var ECG = (function() {
             drawCols : function() {
                 var cellWidth = doc.cellWidth;    // 单元格的宽度
                 var context = doc.context.bcContext;
+                var scale = doc.fc.scale;
                 if(!cellWidth) {
                     cellWidth = 50;
                 }
@@ -594,11 +605,11 @@ var ECG = (function() {
                  * 这里i的初始值应为width+doc.marginL,
                  * 因为边框距离canvas左边距为doc.marginL,
                  */
-                var i      = cellWidth + doc.marginL,
+                var i      = cellWidth * scale + doc.marginL,
                     tWidth = doc.width * 2,
                     num    = 1;
 
-                for(i; i < tWidth; i += cellWidth) {
+                for(i; i < tWidth; i += cellWidth * scale) {
                     if(num % doc.colsPerSecond == 0) {
                         context.beginPath();
                         context.lineWidth = 2;
@@ -621,6 +632,7 @@ var ECG = (function() {
             drawRows : function() {
                 var cellHeight = doc.cellHeight;   // 单元格的高度
                 var context = doc.context.bcContext;
+                var scale = doc.fc.scale;
 
                 if(!cellHeight) {
                     cellHeight = cellWidth;
@@ -628,7 +640,7 @@ var ECG = (function() {
                 context.beginPath();
                 context.strokeStyle = doc.theme.grid;
                 var num = 1;
-                for(var j = cellHeight; j < doc.height; j += cellHeight) {
+                for(var j = cellHeight * scale; j < doc.height; j += cellHeight * scale) {
                     /**
                      * 这里行的起始位置的横坐标为doc.marginL,
                      * 因为canvas的border是从距离左边doc.marginL的地方开始画的
@@ -654,9 +666,10 @@ var ECG = (function() {
              */
             drawPoints : function() {
                 var ifPoint = doc.ifPoint;
+                var scale = doc.fc.scale;
 
                 if(ifPoint) {
-                    var dotMargin = Math.floor(doc.cellWidth / 5);
+                    var dotMargin = Math.floor(doc.cellWidth / 5) * scale;
                     var context = doc.context.bcContext;
                     context.fillStyle = doc.theme.grid;
 
@@ -689,12 +702,13 @@ var ECG = (function() {
             drawTime : function(time, name) {
                 var context = doc.context.fcContext;
                 var coordinate = doc.fc.coordinate[name];
-                var contextX = coordinate.x;
+                var contextX = coordinate.x * doc.fc.scale;
+                var contextY = 20 * doc.fc.scale;
 
                 context.save();
                 context.beginPath();
                 context.fillStyle = doc.theme.font;
-                context.fillText(time, contextX, 20);
+                context.fillText(time, contextX, contextY);
                 context.restore();
 
                 return true;
@@ -720,10 +734,9 @@ var ECG = (function() {
             },
 
             /**
-             * 填充c_in容器
-             * 该方法会先清空c_in容器,然后根据需要填充bc和fc到c_in容器中
+             * 清空c_in
              */
-            fillCIn : function() {
+            emptyCIn : function() {
                 var c_in = doc.ecgDom.c_in;
                 var bc = doc.ecgDom.bc;
                 var fc = doc.ecgDom.fc;
@@ -738,6 +751,7 @@ var ECG = (function() {
                         doc.ecgDom.bc = null;
                     }
                 }
+                // 循环清除c_in中原来存在的canvas元素
                 for(var j = 0; j < fc.length; j++) {
                     try {
                         c_in.removeChild(fc[j]);
@@ -746,18 +760,27 @@ var ECG = (function() {
                     }
                 }
                 doc.ecgDom.fc = [];
+            },
+
+            /**
+             * 填充c_in容器
+             * 该方法会先清空c_in容器,然后根据需要填充bc和fc到c_in容器中
+             */
+            fillCIn : function() {
+                var c_in = doc.ecgDom.c_in;
+                var ecgDom = doc.ecgDom;
 
                 // 生成背景canvas并添加到c_in容器中
-                doc.ecgDom.bc = innerUtil.createCanvas(true);
+                ecgDom.bc = innerUtil.createCanvas(true);
                 doc.context.bcContext = doc.ecgDom.bc.getContext('2d');
-                doc.ecgDom.c_in.appendChild(doc.ecgDom.bc);
+                c_in.appendChild(doc.ecgDom.bc);
 
                 // 生成需要的fc canvas
                 for(var i = 0; i < doc.fc.fcNum; i++) {
                     var c = innerUtil.createCanvas(false);
                     c.id = 'fc' + i;
-                    doc.ecgDom.fc.push(c);
-                    doc.ecgDom.c_in.appendChild(c);
+                    ecgDom.fc.push(c);
+                    ecgDom.c_in.appendChild(c);
                 }
             },
 
@@ -828,8 +851,9 @@ var ECG = (function() {
                         }
                     }
                 } else {
-                    var jump = Math.floor((rows - 1
-                                          ) / num);
+                    var jump = parseFloat(((rows - 1
+                                           ) / num
+                    ).toFixed(1));
                     for(var i = 0; i < num; i++) {
                         style[allDrawECG[i]]['index'] = jump * (i + 1
                             );
@@ -1234,7 +1258,7 @@ var ECG = (function() {
                     bcContext.fillStyle = doc.theme.font;
                     // x,y分别为fillText的横坐标和纵坐标
                     var x = doc.marginL;
-                    var y = subStyle.index * doc.cellHeight;
+                    var y = subStyle.index * doc.cellHeight * doc.fc.scale;
                     bcContext.fillText(subStyle.text, x, y);
                 }
 
@@ -1443,9 +1467,18 @@ var ECG = (function() {
                         }
                     }
 
+                    // 监测是否存在c_in容器
+                    {
+                        var c_in = document.querySelector('#c_in');
+                        if(c_in) {
+                            innerUtil.emptyCIn();
+                            var parent = c_in.parentNode;
+                            parent.removeChild(c_in);
+                        }
+                    }
                     // 生成canvas的内层容器并添加到最外层容器中
                     {
-                        var c_in = document.createElement('div');
+                        c_in = document.createElement('div');
                         c_in.id = 'c_in';
                         doc.ecgDom.c_in = c_in;
                         doc.ecgDom.c.appendChild(c_in);
@@ -1459,7 +1492,7 @@ var ECG = (function() {
                     // 初始化doc.context.bcContext与doc.context.fcContext
                     {
                         doc.context.bcContext = doc.ecgDom.bc.getContext('2d');
-                        doc.context.fcContext = doc.ecgDom.fc[doc.fc.drawIndex].getContext('2d');
+                        doc.context.fcContext = doc.ecgDom.fc[0].getContext('2d');
                     }
 
                     // 标志ECG已被初始化
@@ -1830,6 +1863,31 @@ var ECG = (function() {
                 }
 
                 return true;
+            },
+
+            /**
+             * 用于根据缩放倍数重新绘制心电图
+             *
+             * @param mul
+             */
+            fcScale : function(mul) {
+                var r = parseFloat(mul);
+                if(!r) {
+                    throw new Error('the value of mul is not expected.');
+                }
+                if(r <= 2 && r >= 0.25) {
+                    // 将心电缩放比例存储在配置中,
+                    // drawECG()方法会读取doc.fc.scale的值并绘制相应的心电
+                    var fc = doc.fc;
+                    fc.scale = r;
+                    fc.fcWidth = doc.fc.initWidth * r;
+                    var width = doc.fc.fcNum * doc.fc.fcWidth;
+                    css.c_in.width = width + 'px';
+                    this.init({id : 'canvas'});
+                    this.drawFc();
+                } else {
+                    throw new Error('the value of mul is beyond the range.');
+                }
             },
 
             /**
