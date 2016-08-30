@@ -113,12 +113,13 @@ baseY：number类型
 ### innerUtil.drawECG()方法
 
 ```javascript
-innerUtil.drawECG(name, v, nextLine);
+innerUtil.drawECG(name, v, nextLine, nextContext);
 
 参数：
 name：要绘制的心电的名字
 v：本次绘制终点心电的电压
 nextLine: 是否需要换行
+nextContext: 是否要切换到下一个canvas
 
 返回值：无
 ```

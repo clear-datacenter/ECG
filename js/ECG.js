@@ -199,7 +199,7 @@ var ECG = (function() {
                 width            : '100%',
                 overflowX        : 'scroll',
                 overflowY        : 'hidden',
-                backgroundRepeat : 'no-repeat'
+                backgroundRepeat : 'repeat-x'
             },
             // 内层容器的样式
             c_in : {
@@ -361,8 +361,10 @@ var ECG = (function() {
              * @param name 要绘制的心电的名字,具体参见doc.fc.coordinate中的对象
              * @param v 当前要绘制线段终点的心电电压
              * @param nextLine 是否换行
+             * @param nextContext 是否切换到下一个canvas
              */
-            drawECG : function(name, v, nextLine) {
+            drawECG : function(name, v, nextLine, nextContext) {
+                // 切换绘制下一条心电
                 if(nextLine) {
                     doc.context.fcContext = document.querySelector('#fc0').getContext('2d');
                     doc.fc.drawIndex = 0;
@@ -384,15 +386,10 @@ var ECG = (function() {
                             Math.floor(baseY - v / pixelPerMv * gainMultiple) + 0.5;
 
                     // 当前画布画到边缘时, 跳到下一个画布继续画
-                    // 此时x轴坐标大于fcWidth,所以后面要重新处理destinationX
-                    if(destinationX > doc.fc.fcWidth) {
+                    if(nextContext) {
                         this.resetCoordinateByName(name);
                         doc.fc.drawIndex++;
                         if(doc.fc.drawIndex < doc.ecgDom.fc.length) {
-                            doc.context.fcContext =
-                                doc.ecgDom.fc[doc.fc.drawIndex].getContext('2d');
-                        } else {
-                            doc.fc.drawIndex = 0;
                             doc.context.fcContext =
                                 doc.ecgDom.fc[doc.fc.drawIndex].getContext('2d');
                         }
@@ -984,7 +981,7 @@ var ECG = (function() {
                 var x = (lineNum - 1
                         ) * tcWidth + x;
                 var xInFc = x * (doc.fc.pxPerData / doc.tc.pxPerData
-                    );
+                    ) * doc.fc.scale;
                 outUtil.scrollLR(xInFc);
             },
 
@@ -1853,10 +1850,14 @@ var ECG = (function() {
                                 var v = data[k];
                                 var nextLine = (j == 0 && k == 0
                                 ) ? true : false;
+                                var nextContext = (j !== 0
+                                                  ) && (j % 3 == 0
+                                                  ) && (k == 0
+                                                  ) ? true : false;
                                 if(avgLead) {
                                     v -= avgLead[index];
                                 }
-                                innerUtil.drawECG(name, v, nextLine);
+                                innerUtil.drawECG(name, v, nextLine, nextContext);
                             }
                         }
                     }
