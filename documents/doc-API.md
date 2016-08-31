@@ -1,8 +1,8 @@
-<h2>ECG.js文档-doc部分</h2>
+## ECG.js文档-doc部分
 
 **注：该文档为ECG.js中doc部分的文档，doc对象可通过ECG.doc获取。下面使用的doc对象默认为ECG.doc。**
 
-<h3>1、doc.ecgDom</h3>
+### 1、doc.ecgDom
 
 ```javascript
 ecgDom = {
@@ -14,21 +14,24 @@ ecgDom = {
 };
 ```
 
-<h3>2、doc.width</h3>
+### doc.detailId
+用于在心电图初始化的时候保存详图最外层容器的id，以便于后面在别的地方使用详图最外层容器的id。
+
+### doc.width
 ECG容器的宽度，默认为1000，可通过ECG.outUtil.setECGWH()方法设置。  
 ECG.ecgDom.bc的宽度与容器的宽度相等。
 
-<h3>3、doc.height</h3>
+### doc.height
 ECG容器的高度，默认为宽度的一半，可通过ECG.outUtil.setECGWH()方法设置。  
 ECG.ecgDom.bc的宽度与容器的高度相等。
 
-<h3>5、doc.fcHeight</h3>
+### doc.fcHeight
 ECG容器的高度，默认为宽度的一半，可通过ECG.outUtil.setFcWH()方法设置。
 
-<h3>6、doc.isInit</h3>
+### doc.isInit
 ECG对象是否被初始化过，初始值为false，在ECG.chart.init()方法被调用后会被置为true。可通过此对象监测是否初始化过ECG对象。
 
-<h3>7、doc.context</h3>
+### doc.context
 存放canvas的context，结构如下：
 
 ```javascript
@@ -40,19 +43,19 @@ context: {
 
 bcContext | fcContext分别为ECG.doc.ecgDom.bc｜ECG.doc.ecgDom.fc的语境context，初始值为null。
 
-<h3>9、doc.marginL</h3>
+### doc.marginL
 canvas左边边距，左边的边距部分用来存放解释说明性的文字。默认值为100，可通过ECG.doc.marginL获取或者设置。
 
-<h3>10、doc.tWidth</h3>
+### doc.tWidth
 doc.ecgDom.bc元素的总宽度，该宽度为doc.width + doc.marginL。该宽度不可直接设置，可通过设置doc.width与doc.marginL来间接设置。
 
-<h3>11、doc.cellWidth</h3>
+### doc.cellWidth
 doc.ecgDom.bc中单元格的宽度。
 
-<h3>12、doc.cellHeight</h3>
+### doc.cellHeight
 doc.ecgDom.bc中单元格的高度。
 
-<h3>14、doc.descriptionWordsStyle</h3>
+doc.descriptionWordsStyle
 doc.ecgDom.bc中描述三条心电图多说明文字配置，该属性是一个js对象，具体结构如下：
 
 ```javascript
@@ -87,7 +90,7 @@ descriptionWords : {
 * text: 该描述文字的内容,可选参数，默认为其键值。
 * position: 该属性描述每行描述文字在自己区域内的第几行处绘制，默认在第四行
 
-<h3>15、doc.rowsPerLine</h3>
+### doc.rowsPerLine
 
 doc.rowsPerLine表示每条心电图占用几行。
 
@@ -95,7 +98,7 @@ doc.rowsPerLine表示每条心电图占用几行。
 
 doc.colsPerSecond表示每秒钟占用多少列。
 
-<h3>16、doc.bc</h3>
+### doc.bc
 
 后面会将与doc.ecgDom.bc相关的样式设置等信息放到doc.bc对象中。该对象的结构如下：
 
@@ -105,11 +108,11 @@ doc.bc = {
 }
 ```
 
-<h3>18、doc.rate</h3>
+### doc.rate
 
 器械的采样频率。默认值为125.
 
-<h3>19、doc.fc</h3>
+### doc.fc
 
 后面会将与doc.ecgDom.fc相关的样式等设置信息放到doc.fc对象中。该对象的结构如下：
 
