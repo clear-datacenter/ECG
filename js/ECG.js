@@ -38,6 +38,7 @@ var ECG = (function() {
             cellWidth    : 50,       // 背景单元格宽度
             cellHeight   : 50,       // 背景单元格高度
             ifReposition : true,     // 是否需要重新定位每条心电的位置
+            detailId: null,             // ECG详图最外层容器的id
 
             descriptionWords : {
                 style : {    // descriptionWords描述文字样式配置
@@ -1506,6 +1507,10 @@ var ECG = (function() {
                     {
                         this.drawBc();
                     }
+                    // 存储ECG最外层容器的id
+                    {
+                        doc.detailId = obj['id'];
+                    }
                 } else {
                     console.error('配置信息错误,找不到ECG容器。');
                     return false;
@@ -1884,7 +1889,7 @@ var ECG = (function() {
                     fc.fcWidth = doc.fc.initWidth * r;
                     var width = doc.fc.fcNum * doc.fc.fcWidth;
                     css.c_in.width = width + 'px';
-                    this.init({id : 'canvas'});
+                    this.init({id : doc.detailId});
                     this.drawFc();
                 } else {
                     throw new Error('the value of mul is beyond the range.');

@@ -86,7 +86,6 @@
         });
         $('#scale').on('change', function() {
             var mul = $(this).val();
-            console.log('scale changed: ' + mul);
             ECG.chart.fcScale(mul);
         })
     });
