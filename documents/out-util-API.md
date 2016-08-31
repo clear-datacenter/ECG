@@ -1,8 +1,8 @@
-<h2>ECG.js文档-outUtil部分</h2>
+### ECG.js文档-outUtil部分
 
 **注：该文档为ECG.js中outUtil部分的文档，util对象可通过ECG.util获取。下面使用的outUtil对象默认为ECG.util。**
 
-<h3>3、outUtil.setStyle()方法</h3>
+### outUtil.setStyle()方法
 
 设置ECG容器的样式，会将参数中所有的css样式全部应用到对应的ECG容器及其子容器上。
 
@@ -25,7 +25,7 @@ ECG.doc.ecgDom.bc以及ECG.doc.ecgDom.fc的样式。
 boolean: true | false； 设置成功返回true，否则返回false
 ```
 
-<h3>5、outUtil.setCell()方法</h3>
+### outUtil.setCell()方法
 
 设置doc.ecgDom.bc中单元格的大小。
 
@@ -37,7 +37,7 @@ cw：number，	// 单元格的宽度
 ch：number		// 单元格的高度
 ```
 
-<h3>6、outUtil.setDescriptionWordsStyle()方法</h3>
+### outUtil.setDescriptionWordsStyle()方法
 
 设置doc.ecgDom.bc中左边描述心电图的描述性文字的样式。
 
@@ -58,7 +58,7 @@ obj = {
 }
 ```
 
-<h3>7、outUtil.setDescriptionWords()方法</h3>
+### outUtil.setDescriptionWords()方法
 
 该方法用于设置doc.ecgDom.bc中左边介绍心电的文字。该方法不需要参数，在函数内部根据outUtil.setDescriptionWordsStyle中设置的样式进行绘制。该方法会调用innerUtil.setECGBackground方法讲绘制好的内容设置为ECG最外层容器的背景。
 
@@ -69,7 +69,7 @@ outUtil.setDescriptionWords();
 boolean：true | false
 ```
 
-<h3>8、outUtil.setBorder()方法</h3>
+### outUtil.setBorder()方法
 
 该方法用于设置doc.ecgDom.bc中边框的样式，该方法在内部先在bc中重新绘制border，然后调用innerUtil.setECGBackground方法将bc中的内容导出图片并设置为ECG最外层容器的背景。该方法在内部直接调用的doc.context.bcContext，所以该方法依赖doc.context.bcContext。
 
